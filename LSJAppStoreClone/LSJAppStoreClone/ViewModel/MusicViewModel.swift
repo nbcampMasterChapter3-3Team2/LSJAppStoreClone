@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 import RxSwift
 
 class MusicViewModel {
@@ -23,35 +24,29 @@ class MusicViewModel {
         }
     }
 
+    private func subject(for season: Season) -> BehaviorSubject<Music> {
+        switch season {
+        case .spring: return springMusicSubject
+        case .summer: return summerMusicSubject
+        case .fall: return fallMusicSubject
+        case .winter: return winterMusicSubject
+        }
+    }
+
     private func fetchMusic(to season: Season) {
 
         guard let url = URL(string: "\(ApiUrlType.Music.url)\(season.rawValue)") else { return }
 
         NetworkManager.shared.fetch(url: url)
+            .observe(on: MainScheduler.instance)
             .subscribe(
             onSuccess: { [weak self] (music: Music) in
-                switch season {
-                case .spring:
-                    self?.springMusicSubject.onNext(music)
-                case .summer:
-                    self?.summerMusicSubject.onNext(music)
-                case .fall:
-                    self?.fallMusicSubject.onNext(music)
-                case .winter:
-                    self?.winterMusicSubject.onNext(music)
-                }
+                self?.subject(for: season).onNext(music)
+                NSLog("MusicVM FetchMusic Succes")
             },
             onFailure: { [weak self] error in
-                switch season {
-                case .spring:
-                    self?.springMusicSubject.onError(error)
-                case .summer:
-                    self?.summerMusicSubject.onError(error)
-                case .fall:
-                    self?.fallMusicSubject.onError(error)
-                case .winter:
-                    self?.winterMusicSubject.onError(error)
-                }
+                self?.subject(for: season).onError(error)
+                NSLog("MusicVM FetchMusic Error : \(error)")
             }
         )
             .disposed(by: disposBag)
