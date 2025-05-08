@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		867C963F2DCC826C00C226C7 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 867C963E2DCC826C00C226C7 /* Alamofire */; };
 		86A6E31C2DCC481300FE8622 /* RxBlocking in Frameworks */ = {isa = PBXBuildFile; productRef = 86A6E31B2DCC481300FE8622 /* RxBlocking */; };
 		86A6E31E2DCC481300FE8622 /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 86A6E31D2DCC481300FE8622 /* RxCocoa */; };
 		86A6E3202DCC481300FE8622 /* RxRelay in Frameworks */ = {isa = PBXBuildFile; productRef = 86A6E31F2DCC481300FE8622 /* RxRelay */; };
@@ -47,6 +48,7 @@
 				86A6E3202DCC481300FE8622 /* RxRelay in Frameworks */,
 				86A6E31E2DCC481300FE8622 /* RxCocoa in Frameworks */,
 				86A6E31C2DCC481300FE8622 /* RxBlocking in Frameworks */,
+				867C963F2DCC826C00C226C7 /* Alamofire in Frameworks */,
 				86A6E3232DCC481C00FE8622 /* Then in Frameworks */,
 				86A6E3262DCC482700FE8622 /* SnapKit in Frameworks */,
 			);
@@ -96,6 +98,7 @@
 				86A6E31F2DCC481300FE8622 /* RxRelay */,
 				86A6E3222DCC481C00FE8622 /* Then */,
 				86A6E3252DCC482700FE8622 /* SnapKit */,
+				867C963E2DCC826C00C226C7 /* Alamofire */,
 			);
 			productName = LSJAppStoreClone;
 			productReference = 86A6E2FC2DCC45BC00FE8622 /* LSJAppStoreClone.app */;
@@ -129,6 +132,7 @@
 				86A6E31A2DCC481300FE8622 /* XCRemoteSwiftPackageReference "RxSwift" */,
 				86A6E3212DCC481C00FE8622 /* XCRemoteSwiftPackageReference "Then" */,
 				86A6E3242DCC482700FE8622 /* XCRemoteSwiftPackageReference "SnapKit" */,
+				867C963D2DCC826C00C226C7 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 86A6E2FD2DCC45BC00FE8622 /* Products */;
@@ -175,6 +179,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -202,6 +207,7 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -360,6 +366,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		867C963D2DCC826C00C226C7 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
 		86A6E31A2DCC481300FE8622 /* XCRemoteSwiftPackageReference "RxSwift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
@@ -387,6 +401,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		867C963E2DCC826C00C226C7 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 867C963D2DCC826C00C226C7 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
 		86A6E31B2DCC481300FE8622 /* RxBlocking */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 86A6E31A2DCC481300FE8622 /* XCRemoteSwiftPackageReference "RxSwift" */;
