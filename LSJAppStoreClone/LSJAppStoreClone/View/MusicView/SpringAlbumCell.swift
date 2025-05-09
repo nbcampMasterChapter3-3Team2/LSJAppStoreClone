@@ -29,10 +29,11 @@ final class SpringAlbumCell: UICollectionViewCell {
     private let trackNameLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 16, weight: .bold)
         $0.textColor = .white
-
         $0.numberOfLines = 1
     }
 
+
+    // TODO: textColer 변경하기 (Color.Assets 만들기)
     private let artistNameLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 14, weight: .semibold)
         $0.textColor = .systemGray4
@@ -70,22 +71,19 @@ final class SpringAlbumCell: UICollectionViewCell {
             $0.height.equalTo(60)
         }
 
-
         trackNameLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().offset(16)
-            $0.top.equalToSuperview().offset(8)
+            $0.centerY.equalToSuperview().offset(-8)
         }
 
         artistNameLabel.snp.makeConstraints {
             $0.leading.equalTo(trackNameLabel)
-            $0.trailing.equalTo(trackNameLabel)
-            $0.top.equalTo(trackNameLabel.snp.bottom).offset(2)
-            $0.bottom.equalToSuperview().inset(8)
+            $0.top.equalTo(trackNameLabel.snp.bottom)
         }
 
     }
 
-    func configure(text: String, data: Music, index: Int) {
+    func configure(data: Music, index: Int) {
 
         guard let backgroundImageUrl = URL(string: data.results[index].artworkUrl100) else {
             NSLog("ERROR : Configure \(index)")

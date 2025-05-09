@@ -169,28 +169,47 @@ extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        let section = Season.allCases[indexPath.section]
-        let text = "\(indexPath.section)_\(indexPath.item)"
-
-        switch section {
+        switch Season.allCases[indexPath.section] {
         case .spring:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: SpringAlbumCell.id,
                 for: indexPath
             ) as? SpringAlbumCell
                 else { return UICollectionViewCell() }
-            cell.configure(text: text, data: springMusics, index: indexPath.item)
+            cell.configure(data: springMusics, index: indexPath.item)
             return cell
 
-        case .summer, .fall, .winter:
+        case .summer:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: OthersAlbumCell.id,
                 for: indexPath
             ) as? OthersAlbumCell
                 else { return UICollectionViewCell() }
-            cell.configure(text: text)
-            cell.backgroundColor = .red
+
+            cell.configure(data: summerMusics, index: indexPath.item)
             return cell
+
+        case .fall:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: OthersAlbumCell.id,
+                for: indexPath
+            ) as? OthersAlbumCell
+                else { return UICollectionViewCell() }
+
+            cell.configure(data: fallMusics, index: indexPath.item)
+            return cell
+
+        case .winter:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: OthersAlbumCell.id,
+                for: indexPath
+            ) as? OthersAlbumCell
+                else { return UICollectionViewCell() }
+
+            cell.configure(data: winterMusics, index: indexPath.item)
+            return cell
+
+
         }
     }
 

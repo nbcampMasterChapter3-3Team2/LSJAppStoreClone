@@ -7,15 +7,36 @@
 
 import UIKit
 
+import Kingfisher
 import SnapKit
 import Then
 
 final class OthersAlbumCell: UICollectionViewCell {
     static let id = "OthersAlbumCell"
 
-    private let label = UILabel().then {
-        $0.text = "가"
+    private let artworkImageView = UIImageView().then {
+        $0.contentMode = .scaleAspectFill
+        $0.layer.cornerRadius = 16
+        $0.clipsToBounds = true
+    }
+
+    private let trackNameLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
         $0.textColor = .label
+        $0.numberOfLines = 1
+    }
+
+    // TODO: textColer 변경하기 (Color.Assets 만들기)
+    private let artistNameLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 14, weight: .semibold)
+        $0.textColor = .secondaryLabel
+        $0.numberOfLines = 1
+    }
+
+    // TODO: borderColor 변경하기 (Color.Assets 만들기)
+    private let divider = UIView().then {
+        $0.layer.borderColor = UIColor.systemGray6.cgColor
+        $0.layer.borderWidth = 1
     }
 
     override init(frame: CGRect) {
@@ -29,30 +50,53 @@ final class OthersAlbumCell: UICollectionViewCell {
         super.init(coder: coder)
     }
 
-    private func setStyle() {
-        self.contentView.backgroundColor = .systemBlue
-        self.contentView.layer.cornerRadius = 16
-        self.contentView.layer.masksToBounds = true
-    }
+    private func setStyle() {}
 
     private func setHierarchy() {
-        addSubview(label)
+        addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
     }
 
     private func setLayout() {
-        label.snp.makeConstraints {
-            $0.center.equalToSuperview()
+        artworkImageView.snp.makeConstraints {
+            $0.leading.top.equalToSuperview()
+            $0.width.height.equalTo(50)
+        }
+
+        trackNameLabel.snp.makeConstraints {
+            $0.top.equalTo(artworkImageView.snp.top).offset(8)
+            $0.leading.equalTo(artworkImageView.snp.trailing).offset(16)
+            $0.trailing.equalToSuperview().offset(-8)
+        }
+
+        artistNameLabel.snp.makeConstraints {
+            $0.leading.equalTo(trackNameLabel.snp.leading)
+            $0.trailing.equalToSuperview().offset(-8)
+            $0.top.equalTo(trackNameLabel.snp.bottom)
+        }
+
+        divider.snp.makeConstraints {
+            $0.leading.equalToSuperview()
+            $0.bottom.equalToSuperview()
+            $0.width.equalTo(SizeLiterals.Screen.screenWidth * 0.8 - SizeLiterals.Screen.screenWidth * 0.045)
+            $0.height.equalTo(1)
         }
     }
 
-    func configure(text: String) {
-        label.text = text
-
+    func configure(data: Music, index: Int) {
+        guard let artworkImageUrl = URL(string: data.results[index].artworkUrl100) else {
+            NSLog("ERROR : Configure \(index)")
+            return
+        }
+        artworkImageView.kf.setImage(with: artworkImageUrl)
+        trackNameLabel.text = data.results[index].trackName
+        artistNameLabel.text = data.results[index].artistName
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        label.text = nil
+        artworkImageView.image = nil
+        trackNameLabel.text = nil
+        artistNameLabel.text = nil
     }
 
 }

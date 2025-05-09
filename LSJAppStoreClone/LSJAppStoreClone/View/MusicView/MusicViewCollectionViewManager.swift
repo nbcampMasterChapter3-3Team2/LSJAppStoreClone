@@ -9,8 +9,6 @@ import UIKit
 
 final class MusicViewCollectionViewManager {
 
-    // MARK: - Layout Factory
-
     func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { sectionIndex, environment in
 
@@ -64,7 +62,7 @@ final class MusicViewCollectionViewManager {
     private func createThreeVerticalItemInHorizontalLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .absolute(100)
+            heightDimension: .absolute(70)
         )
 
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
@@ -72,15 +70,14 @@ final class MusicViewCollectionViewManager {
 
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(0.8),
-            heightDimension: .absolute(330)
+            heightDimension: .absolute(250)
         )
 
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
+        group.contentInsets = .init(top: 16, leading: SizeLiterals.Screen.screenWidth * 0.045, bottom: 0, trailing: 0)
 
         let section = NSCollectionLayoutSection(group: group)
-        section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
+        section.orthogonalScrollingBehavior = .groupPaging
 
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
