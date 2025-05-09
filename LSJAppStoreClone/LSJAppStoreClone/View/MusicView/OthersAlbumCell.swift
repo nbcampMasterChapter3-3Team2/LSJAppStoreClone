@@ -20,6 +20,7 @@ final class OthersAlbumCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setStyle()
         setHierarchy()
         setLayout()
     }
@@ -30,6 +31,8 @@ final class OthersAlbumCell: UICollectionViewCell {
 
     private func setStyle() {
         self.contentView.backgroundColor = .systemBlue
+        self.contentView.layer.cornerRadius = 16
+        self.contentView.layer.masksToBounds = true
     }
 
     private func setHierarchy() {

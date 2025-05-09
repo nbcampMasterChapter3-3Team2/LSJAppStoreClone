@@ -7,19 +7,41 @@
 
 import UIKit
 
+import Kingfisher
 import SnapKit
 import Then
 
 final class SpringAlbumCell: UICollectionViewCell {
     static let id = "SpringAlbumCell"
 
-    private let label = UILabel().then {
-        $0.text = "1"
-        $0.textColor = .label
+    private let backgroundImageView = UIImageView().then {
+        $0.contentMode = .scaleAspectFill
+        $0.layer.cornerRadius = 16
+        $0.clipsToBounds = true
+    }
+
+    private let overlayView = UIView().then {
+        $0.backgroundColor = UIColor(white: 0, alpha: 0.4)
+        $0.layer.cornerRadius = 16
+        $0.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
+    }
+
+    private let trackNameLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .white
+
+        $0.numberOfLines = 1
+    }
+
+    private let artistNameLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 14, weight: .semibold)
+        $0.textColor = .systemGray4
+        $0.numberOfLines = 1
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setStyle()
         setHierarchy()
         setLayout()
     }
@@ -29,26 +51,55 @@ final class SpringAlbumCell: UICollectionViewCell {
     }
 
     private func setStyle() {
-        self.contentView.backgroundColor = .systemBlue
+        self.contentView.layer.cornerRadius = 16
+        self.contentView.layer.masksToBounds = true
     }
 
     private func setHierarchy() {
-        addSubview(label)
+        addSubviews(backgroundImageView, overlayView)
+        overlayView.addSubviews(trackNameLabel, artistNameLabel)
     }
 
     private func setLayout() {
-        label.snp.makeConstraints {
-            $0.center.equalToSuperview()
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
+
+        overlayView.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(60)
+        }
+
+
+        trackNameLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(16)
+            $0.top.equalToSuperview().offset(8)
+        }
+
+        artistNameLabel.snp.makeConstraints {
+            $0.leading.equalTo(trackNameLabel)
+            $0.trailing.equalTo(trackNameLabel)
+            $0.top.equalTo(trackNameLabel.snp.bottom).offset(2)
+            $0.bottom.equalToSuperview().inset(8)
+        }
+
     }
 
-    func configure(text: String) {
-        label.text = text
+    func configure(text: String, data: Music, index: Int) {
+
+        guard let backgroundImageUrl = URL(string: data.results[index].artworkUrl100) else {
+            NSLog("ERROR : Configure \(index)")
+            return
+        }
+        backgroundImageView.kf.setImage(with: backgroundImageUrl)
+        trackNameLabel.text = data.results[index].trackName
+        artistNameLabel.text = data.results[index].artistName
+
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
-        label.text = nil
+        backgroundImageView.image = nil
     }
 
 
