@@ -15,6 +15,11 @@ struct Music: Codable {
         self.resultCount = 0
         self.results = []
     }
+
+    init(resultCount: Int, results: [Result]) {
+        self.resultCount = resultCount
+        self.results = results
+    }
 }
 
 // MARK: - Result
