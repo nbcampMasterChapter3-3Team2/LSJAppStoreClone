@@ -35,7 +35,7 @@ class MusicViewModel {
 
     private func fetchMusic(to season: Season) {
 
-        guard let url = URL(string: "\(ApiUrlType.Music.url)\(season.rawValue)") else { return }
+        guard let url = URL(string: "\(ApiUrlType.Music.url)\(season.query)") else { return }
 
         NetworkManager.shared.fetch(url: url)
             .observe(on: MainScheduler.instance)
