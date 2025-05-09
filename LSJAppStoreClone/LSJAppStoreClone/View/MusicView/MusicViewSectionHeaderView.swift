@@ -39,12 +39,12 @@ final class MusicViewSectionHeaderView: UICollectionReusableView {
 
     private func setLayout() {
         titleLabel.snp.makeConstraints {
-            $0.leading.equalToSuperview().offset(10)
+            $0.leading.equalToSuperview().offset(16)
         }
 
         descLabel.snp.makeConstraints {
             $0.leading.equalTo(titleLabel.snp.leading)
-            $0.top.equalTo(titleLabel.snp.bottom).offset(10)
+            $0.top.equalTo(titleLabel.snp.bottom).offset(16)
         }
     }
 

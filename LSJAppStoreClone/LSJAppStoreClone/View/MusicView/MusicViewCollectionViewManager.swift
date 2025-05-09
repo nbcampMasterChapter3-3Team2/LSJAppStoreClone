@@ -36,59 +36,55 @@ final class MusicViewCollectionViewManager {
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
         let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.92),
+            widthDimension: .fractionalWidth(0.8),
             heightDimension: .absolute(300)
         )
 
-        let screenWidth = SizeLiterals.Screen.screenWidth * 0.04
-
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
-        group.contentInsets = .init(top: 16, leading: screenWidth, bottom: 0, trailing: 0)
+        group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
 
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.contentInsets = .init(top: 0, leading: 0, bottom: 30, trailing: screenWidth)
+        section.contentInsets = .init(top: 0, leading: 0, bottom: 30, trailing: 0)
+        section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(20))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top)
+            alignment: .top
+        )
 
         section.boundarySupplementaryItems = [header]
 
         return section
     }
 
-
-
-
-
     private func createThreeVerticalItemInHorizontalLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1.0),
-            heightDimension: .fractionalHeight(0.3))
-
-        let item = NSCollectionLayoutItem(layoutSize: itemSize)
-        item.contentInsets = .init(top: 0, leading: 0, bottom: 30, trailing: 0)
-
-        let groupSize = NSCollectionLayoutSize(
-            widthDimension: .fractionalWidth(0.92),
-            heightDimension: .absolute(500)
+            heightDimension: .absolute(100)
         )
 
-        let screenWidth = SizeLiterals.Screen.screenWidth * 0.04
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+        item.contentInsets = .init(top: 0, leading: 0, bottom: 10, trailing: 0)
+
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(0.8),
+            heightDimension: .absolute(330)
+        )
 
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        group.contentInsets = .init(top: 16, leading: screenWidth, bottom: 0, trailing: 0)
+        group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
 
         let section = NSCollectionLayoutSection(group: group)
         section.orthogonalScrollingBehavior = .groupPagingCentered
-        section.contentInsets = .init(top: 0, leading: 0, bottom: 30, trailing: screenWidth)
-        section.orthogonalScrollingBehavior = .groupPagingCentered
+        section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(20))
-        let header = NSCollectionLayoutBoundarySupplementaryItem(layoutSize: headerSize,
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
             alignment: .top)
 
