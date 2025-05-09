@@ -50,12 +50,12 @@ final class MusicViewController: UIViewController {
     // MARK: - View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        binding()
         setStyle()
         setHierarchy()
         setLayout()
         setDelegate()
         setDataSource()
+        binding()
     }
 
     // MARK: - Style Helper
@@ -86,7 +86,6 @@ final class MusicViewController: UIViewController {
     // MARK: - DataSource Helper
     private func setDataSource() {
         collectionView.dataSource = self
-
     }
 
     // MARK: - Methods
@@ -159,21 +158,18 @@ extension MusicViewController: UICollectionViewDelegate {
 
 extension MusicViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        switch Season(rawValue: section) {
-        case .spring: return springMusics.resultCount
-        case .summer: return summerMusics.resultCount
-        case .fall: return fallMusics.resultCount
-        case .winter: return winterMusics.resultCount
-        case .none: return 4
+        let section = Season.allCases[section]
+        switch section {
+        case .spring: return springMusics.results.count
+        case .summer: return summerMusics.results.count
+        case .fall: return fallMusics.results.count
+        case .winter: return winterMusics.results.count
         }
     }
 
-    func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
 
-        let section = Season(rawValue: indexPath.section)
+        let section = Season.allCases[indexPath.section]
         let text = "\(indexPath.section)_\(indexPath.item)"
 
         switch section {
@@ -183,8 +179,7 @@ extension MusicViewController: UICollectionViewDataSource {
                 for: indexPath
             ) as? SpringAlbumCell
                 else { return UICollectionViewCell() }
-            cell.configure(text: text)
-            cell.backgroundColor = .red
+            cell.configure(text: text, data: springMusics, index: indexPath.item)
             return cell
 
         case .summer, .fall, .winter:
@@ -196,9 +191,6 @@ extension MusicViewController: UICollectionViewDataSource {
             cell.configure(text: text)
             cell.backgroundColor = .red
             return cell
-
-        case .none:
-            return UICollectionViewCell()
         }
     }
 

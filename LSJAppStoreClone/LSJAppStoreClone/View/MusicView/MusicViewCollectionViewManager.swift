@@ -49,7 +49,7 @@ final class MusicViewCollectionViewManager {
         section.contentInsets = .init(top: 0, leading: 0, bottom: 30, trailing: 0)
         section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(20))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
@@ -82,11 +82,12 @@ final class MusicViewCollectionViewManager {
         section.orthogonalScrollingBehavior = .groupPagingCentered
         section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(20))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
-            alignment: .top)
+            alignment: .top
+        )
 
         section.boundarySupplementaryItems = [header]
 

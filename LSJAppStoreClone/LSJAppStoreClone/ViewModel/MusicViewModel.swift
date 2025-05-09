@@ -41,7 +41,13 @@ class MusicViewModel {
             .observe(on: MainScheduler.instance)
             .subscribe(
             onSuccess: { [weak self] (music: Music) in
-                self?.subject(for: season).onNext(music)
+                let sorted = music.results.sorted { $0.releaseDate > $1.releaseDate }
+                self?.subject(for: season).onNext(
+                    Music(
+                        resultCount: music.resultCount,
+                        results: season == .spring ? Array(sorted.prefix(5)) : sorted
+                    )
+                )
                 NSLog("MusicVM FetchMusic Succes")
             },
             onFailure: { [weak self] error in
