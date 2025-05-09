@@ -12,8 +12,11 @@ import SnapKit
 import Then
 
 final class OthersAlbumCell: UICollectionViewCell {
+
+    // MARK: - Properties
     static let id = "OthersAlbumCell"
 
+    // MARK: - UI Components
     private let artworkImageView = UIImageView().then {
         $0.contentMode = .scaleAspectFill
         $0.layer.cornerRadius = 16
@@ -39,9 +42,9 @@ final class OthersAlbumCell: UICollectionViewCell {
         $0.layer.borderWidth = 1
     }
 
+    // MARK: - Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setStyle()
         setHierarchy()
         setLayout()
     }
@@ -50,12 +53,12 @@ final class OthersAlbumCell: UICollectionViewCell {
         super.init(coder: coder)
     }
 
-    private func setStyle() {}
-
+    // MARK: - Hierarchy Helper
     private func setHierarchy() {
         addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
     }
 
+    // MARK: - Layout Helper
     private func setLayout() {
         artworkImageView.snp.makeConstraints {
             $0.leading.top.equalToSuperview()
@@ -87,6 +90,7 @@ final class OthersAlbumCell: UICollectionViewCell {
             NSLog("ERROR : Configure \(index)")
             return
         }
+
         artworkImageView.kf.setImage(with: artworkImageUrl)
         trackNameLabel.text = data.results[index].trackName
         artistNameLabel.text = data.results[index].artistName
@@ -98,5 +102,4 @@ final class OthersAlbumCell: UICollectionViewCell {
         trackNameLabel.text = nil
         artistNameLabel.text = nil
     }
-
 }

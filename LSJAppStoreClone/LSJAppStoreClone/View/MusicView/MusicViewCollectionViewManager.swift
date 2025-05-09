@@ -9,6 +9,7 @@ import UIKit
 
 final class MusicViewCollectionViewManager {
 
+    // MARK: - Methods
     func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { sectionIndex, environment in
 
@@ -37,9 +38,7 @@ final class MusicViewCollectionViewManager {
             widthDimension: .fractionalWidth(0.8),
             heightDimension: .absolute(300)
         )
-
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
-
         group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
 
         let section = NSCollectionLayoutSection(group: group)
@@ -72,7 +71,6 @@ final class MusicViewCollectionViewManager {
             widthDimension: .fractionalWidth(0.8),
             heightDimension: .absolute(250)
         )
-
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
         group.contentInsets = .init(top: 16, leading: SizeLiterals.Screen.screenWidth * 0.045, bottom: 0, trailing: 0)
 
@@ -103,7 +101,6 @@ final class MusicViewCollectionViewManager {
             widthDimension: .fractionalWidth(1),
             heightDimension: .fractionalWidth(1)
         )
-
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 
         return NSCollectionLayoutSection(group: group)

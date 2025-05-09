@@ -12,8 +12,11 @@ import SnapKit
 import Then
 
 final class SpringAlbumCell: UICollectionViewCell {
+
+    // MARK: - Properties
     static let id = "SpringAlbumCell"
 
+    // MARK: - UI Components
     private let backgroundImageView = UIImageView().then {
         $0.contentMode = .scaleAspectFill
         $0.layer.cornerRadius = 16
@@ -40,6 +43,7 @@ final class SpringAlbumCell: UICollectionViewCell {
         $0.numberOfLines = 1
     }
 
+    // MARK: - Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
         setStyle()
@@ -51,16 +55,19 @@ final class SpringAlbumCell: UICollectionViewCell {
         super.init(coder: coder)
     }
 
+    // MARK: - Style Helper
     private func setStyle() {
         self.contentView.layer.cornerRadius = 16
         self.contentView.layer.masksToBounds = true
     }
 
+    // MARK: - Hierarchy Helper
     private func setHierarchy() {
         addSubviews(backgroundImageView, overlayView)
         overlayView.addSubviews(trackNameLabel, artistNameLabel)
     }
 
+    // MARK: - Layout Helper
     private func setLayout() {
         backgroundImageView.snp.makeConstraints {
             $0.edges.equalToSuperview()
@@ -83,24 +90,21 @@ final class SpringAlbumCell: UICollectionViewCell {
 
     }
 
+    // MARK: - Methods
     func configure(data: Music, index: Int) {
-
         guard let backgroundImageUrl = URL(string: data.results[index].artworkUrl100) else {
             NSLog("ERROR : Configure \(index)")
             return
         }
+
         backgroundImageView.kf.setImage(with: backgroundImageUrl)
         trackNameLabel.text = data.results[index].trackName
         artistNameLabel.text = data.results[index].artistName
-
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         backgroundImageView.image = nil
     }
-
-
-
 }
 

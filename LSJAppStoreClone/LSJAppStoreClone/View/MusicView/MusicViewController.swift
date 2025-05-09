@@ -99,7 +99,7 @@ final class MusicViewController: UIViewController {
             },
             onError: { error in
                 NSLog("error binding : \(error.localizedDescription)")
-            },
+            }
         )
             .disposed(by: disposBag)
 
@@ -112,7 +112,7 @@ final class MusicViewController: UIViewController {
             },
             onError: { error in
                 NSLog("error binding : \(error.localizedDescription)")
-            },
+            }
         )
             .disposed(by: disposBag)
 
@@ -125,7 +125,7 @@ final class MusicViewController: UIViewController {
             },
             onError: { error in
                 NSLog("error binding : \(error.localizedDescription)")
-            },
+            }
         )
             .disposed(by: disposBag)
 
@@ -138,18 +138,14 @@ final class MusicViewController: UIViewController {
             },
             onError: { error in
                 NSLog("error binding : \(error.localizedDescription)")
-            },
+            }
         )
             .disposed(by: disposBag)
     }
 
-
-
     private func configure() {
 
     }
-
-
 }
 
 extension MusicViewController: UICollectionViewDelegate {
@@ -157,6 +153,7 @@ extension MusicViewController: UICollectionViewDelegate {
 }
 
 extension MusicViewController: UICollectionViewDataSource {
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let section = Season.allCases[section]
         switch section {
@@ -174,8 +171,9 @@ extension MusicViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: SpringAlbumCell.id,
                 for: indexPath
-            ) as? SpringAlbumCell
-                else { return UICollectionViewCell() }
+            ) as? SpringAlbumCell else {
+                return UICollectionViewCell()
+            }
             cell.configure(data: springMusics, index: indexPath.item)
             return cell
 
@@ -183,8 +181,9 @@ extension MusicViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: OthersAlbumCell.id,
                 for: indexPath
-            ) as? OthersAlbumCell
-                else { return UICollectionViewCell() }
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
 
             cell.configure(data: summerMusics, index: indexPath.item)
             return cell
@@ -193,8 +192,9 @@ extension MusicViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: OthersAlbumCell.id,
                 for: indexPath
-            ) as? OthersAlbumCell
-                else { return UICollectionViewCell() }
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
 
             cell.configure(data: fallMusics, index: indexPath.item)
             return cell
@@ -203,13 +203,12 @@ extension MusicViewController: UICollectionViewDataSource {
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: OthersAlbumCell.id,
                 for: indexPath
-            ) as? OthersAlbumCell
-                else { return UICollectionViewCell() }
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
 
             cell.configure(data: winterMusics, index: indexPath.item)
             return cell
-
-
         }
     }
 
@@ -224,7 +223,9 @@ extension MusicViewController: UICollectionViewDataSource {
             ofKind: kind,
             withReuseIdentifier: MusicViewSectionHeaderView.id,
             for: indexPath
-        ) as? MusicViewSectionHeaderView else { return UICollectionReusableView() }
+        ) as? MusicViewSectionHeaderView else {
+            return UICollectionReusableView()
+        }
 
         let sectionType = Season.allCases[indexPath.section]
         headerView.configure(season: sectionType)

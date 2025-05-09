@@ -11,8 +11,11 @@ import SnapKit
 import Then
 
 final class MusicViewSectionHeaderView: UICollectionReusableView {
+
+    // MARK: - Properties
     static let id = "MusicViewSectionHeader"
 
+    // MARK: - UI Components
     private let titleLabel = UILabel().then {
         $0.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         $0.textColor = .label
@@ -23,6 +26,8 @@ final class MusicViewSectionHeaderView: UICollectionReusableView {
         $0.textColor = .secondaryLabel
     }
 
+
+    // MARK: - Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
         setHierarchy()
@@ -33,10 +38,12 @@ final class MusicViewSectionHeaderView: UICollectionReusableView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Hierarchy Helper
     private func setHierarchy() {
         addSubviews(titleLabel, descLabel)
     }
 
+    // MARK: - Layout Helper
     private func setLayout() {
         titleLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().offset(16)
@@ -49,6 +56,7 @@ final class MusicViewSectionHeaderView: UICollectionReusableView {
         }
     }
 
+    // MARK: - Methods
     func configure(season: Season) {
         titleLabel.text = season.title
         descLabel.text = season.description

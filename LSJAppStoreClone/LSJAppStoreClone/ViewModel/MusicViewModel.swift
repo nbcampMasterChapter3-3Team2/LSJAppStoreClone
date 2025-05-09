@@ -9,8 +9,9 @@ import Foundation
 
 import RxSwift
 
-class MusicViewModel {
+final class MusicViewModel {
 
+    // MARK: - Properties
     private let disposBag = DisposeBag()
 
     let springMusicSubject = BehaviorSubject(value: Music())
@@ -18,12 +19,14 @@ class MusicViewModel {
     let fallMusicSubject = BehaviorSubject(value: Music())
     let winterMusicSubject = BehaviorSubject(value: Music())
 
+    // MARK: - Initializer
     init() {
         Season.allCases.forEach { season in
             fetchMusic(to: season)
         }
     }
 
+    // MARK: - Methods
     private func subject(for season: Season) -> BehaviorSubject<Music> {
         switch season {
         case .spring: return springMusicSubject
@@ -50,6 +53,7 @@ class MusicViewModel {
                 )
                 NSLog("MusicVM FetchMusic Succes")
             },
+
             onFailure: { [weak self] error in
                 self?.subject(for: season).onError(error)
                 NSLog("MusicVM FetchMusic Error : \(error)")
