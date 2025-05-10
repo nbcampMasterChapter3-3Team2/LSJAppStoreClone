@@ -29,16 +29,14 @@ final class OthersAlbumCell: UICollectionViewCell {
         $0.numberOfLines = 1
     }
 
-    // TODO: textColer 변경하기 (Color.Assets 만들기)
     private let artistNameLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 14, weight: .semibold)
         $0.textColor = .secondaryLabel
         $0.numberOfLines = 1
     }
 
-    // TODO: borderColor 변경하기 (Color.Assets 만들기)
     private let divider = UIView().then {
-        $0.layer.borderColor = UIColor.systemGray6.cgColor
+        $0.layer.borderColor = UIColor.separator.cgColor
         $0.layer.borderWidth = 1
     }
 
@@ -74,7 +72,7 @@ final class OthersAlbumCell: UICollectionViewCell {
         artistNameLabel.snp.makeConstraints {
             $0.leading.equalTo(trackNameLabel.snp.leading)
             $0.trailing.equalToSuperview().offset(-8)
-            $0.top.equalTo(trackNameLabel.snp.bottom)
+            $0.top.equalTo(trackNameLabel.snp.bottom).offset(4)
         }
 
         divider.snp.makeConstraints {
@@ -102,4 +100,10 @@ final class OthersAlbumCell: UICollectionViewCell {
         trackNameLabel.text = nil
         artistNameLabel.text = nil
     }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        divider.layer.borderColor = UIColor.separator.resolvedColor(with: traitCollection).cgColor
+    }
+
 }

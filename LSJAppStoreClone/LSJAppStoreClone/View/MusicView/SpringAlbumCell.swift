@@ -24,7 +24,7 @@ final class SpringAlbumCell: UICollectionViewCell {
     }
 
     private let overlayView = UIView().then {
-        $0.backgroundColor = UIColor(white: 0, alpha: 0.4)
+        $0.backgroundColor = UIColor(white: 0, alpha: 0.6)
         $0.layer.cornerRadius = 16
         $0.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
     }
@@ -35,11 +35,9 @@ final class SpringAlbumCell: UICollectionViewCell {
         $0.numberOfLines = 1
     }
 
-
-    // TODO: textColer 변경하기 (Color.Assets 만들기)
     private let artistNameLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 14, weight: .semibold)
-        $0.textColor = .systemGray4
+        $0.textColor = .cSecondary
         $0.numberOfLines = 1
     }
 
