@@ -78,7 +78,7 @@ final class OthersAlbumCell: UICollectionViewCell {
         divider.snp.makeConstraints {
             $0.leading.equalToSuperview()
             $0.bottom.equalToSuperview()
-            $0.width.equalTo(SizeLiterals.Screen.screenWidth * 0.8 - SizeLiterals.Screen.screenWidth * 0.045)
+            $0.width.equalToSuperview()
             $0.height.equalTo(1)
         }
     }
