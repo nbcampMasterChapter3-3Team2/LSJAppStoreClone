@@ -38,7 +38,7 @@ final class MusicViewModel {
 
     private func fetchMusic(to season: Season) {
 
-        guard let url = URL(string: "\(ApiUrlType.Music.url)\(season.query)") else { return }
+        guard let url = URL(string: "\(RequestURLType.Music.url)\(season.query)") else { return }
 
         NetworkManager.shared.fetch(url: url)
             .observe(on: MainScheduler.instance)
@@ -51,7 +51,7 @@ final class MusicViewModel {
                         results: season == .spring ? Array(sorted.prefix(5)) : sorted
                     )
                 )
-                NSLog("MusicVM FetchMusic Succes")
+                NSLog("MusicVM \(season) FetchMusic Succes")
             },
 
             onFailure: { [weak self] error in
@@ -61,5 +61,4 @@ final class MusicViewModel {
         )
             .disposed(by: disposBag)
     }
-
 }

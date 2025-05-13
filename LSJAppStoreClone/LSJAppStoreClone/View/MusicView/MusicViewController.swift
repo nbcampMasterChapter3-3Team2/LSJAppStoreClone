@@ -171,61 +171,60 @@ final class MusicViewController: UIViewController {
 extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = Season.allCases[section]
-        switch section {
-        case .spring: return springMusics.results.count
-        case .summer: return summerMusics.results.count
-        case .fall: return fallMusics.results.count
-        case .winter: return winterMusics.results.count
-        }
+            let section = Season.allCases[section]
+            switch section {
+            case .spring: return springMusics.results.count
+            case .summer: return summerMusics.results.count
+            case .fall: return fallMusics.results.count
+            case .winter: return winterMusics.results.count
+            }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            switch Season.allCases[indexPath.section] {
+            case .spring:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: SpringAlbumCell.id,
+                    for: indexPath
+                ) as? SpringAlbumCell else {
+                    return UICollectionViewCell()
+                }
+                cell.configure(data: springMusics, index: indexPath.item)
+                return cell
 
-        switch Season.allCases[indexPath.section] {
-        case .spring:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: SpringAlbumCell.id,
-                for: indexPath
-            ) as? SpringAlbumCell else {
-                return UICollectionViewCell()
+            case .summer:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+
+                cell.configure(data: summerMusics, index: indexPath.item)
+                return cell
+
+            case .fall:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+
+                cell.configure(data: fallMusics, index: indexPath.item)
+                return cell
+
+            case .winter:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+
+                cell.configure(data: winterMusics, index: indexPath.item)
+                return cell
             }
-            cell.configure(data: springMusics, index: indexPath.item)
-            return cell
-
-        case .summer:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: summerMusics, index: indexPath.item)
-            return cell
-
-        case .fall:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: fallMusics, index: indexPath.item)
-            return cell
-
-        case .winter:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: winterMusics, index: indexPath.item)
-            return cell
-        }
     }
 
 

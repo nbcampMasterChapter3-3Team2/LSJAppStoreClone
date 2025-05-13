@@ -28,7 +28,6 @@ class NetworkManager {
                     switch response.result {
                     case .success(let value):
                         observer(.success(value))
-                        NSLog("성공")
                     case .failure(let afError):
                         if let error = afError.asAFError, error.isResponseSerializationError {
                             observer(.failure(NetworkErrorType.decodingFail))
