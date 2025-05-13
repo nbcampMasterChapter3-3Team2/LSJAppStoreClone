@@ -8,14 +8,19 @@
 import UIKit
 
 import RxSwift
+import RxCocoa
 import SnapKit
 import Then
 
 final class MusicViewController: UIViewController {
 
     // MARK: - Properties
-    private let disposBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     private let viewModel = MusicViewModel()
+    private var suggestVC: SuggestionViewController {
+        return searchController.searchResultsController as! SuggestionViewController
+    }
+
     private let cv = MusicViewCollectionViewManager()
 
     private var springMusics = Music()
@@ -24,11 +29,14 @@ final class MusicViewController: UIViewController {
     private var winterMusics = Music()
 
     // MARK: - UI Components
-    private let searchController = UISearchController(searchResultsController: nil).then {
-        $0.searchBar.placeholder = "영화, 팟케스트"
+    private let searchController = UISearchController(
+        searchResultsController: SuggestionViewController()
+    ).then {
+        $0.searchBar.placeholder = "영화, 팟캐스트"
+        $0.definesPresentationContext = true
     }
 
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout()).then {
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
         // 1) Cell 등록
         $0.register(SpringAlbumCell.self,
             forCellWithReuseIdentifier: SpringAlbumCell.id)
@@ -81,6 +89,7 @@ final class MusicViewController: UIViewController {
     // MARK: - Deleate Helper
     private func setDelegate() {
         collectionView.delegate = self
+        searchController.searchBar.delegate = self
     }
 
     // MARK: - DataSource Helper
@@ -101,7 +110,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.summerMusicSubject
             .observe(on: MainScheduler.instance)
@@ -114,7 +123,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.fallMusicSubject
             .observe(on: MainScheduler.instance)
@@ -127,7 +136,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.winterMusicSubject
             .observe(on: MainScheduler.instance)
@@ -140,16 +149,23 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
+
+        searchBarBinding()
+
+    }
+
+    private func searchBarBinding() {
+        self.searchController.searchBar.rx.text.orEmpty
+            .distinctUntilChanged()
+            .bind { [weak self] text in
+            self?.suggestVC.fetchMovieAndPodcast(to: text)
+        }.disposed(by: disposeBag)
     }
 
     private func configure() {
 
     }
-}
-
-extension MusicViewController: UICollectionViewDelegate {
-
 }
 
 extension MusicViewController: UICollectionViewDataSource {
@@ -231,6 +247,18 @@ extension MusicViewController: UICollectionViewDataSource {
         headerView.configure(season: sectionType)
 
         return headerView
+    }
+}
+
+extension MusicViewController: UICollectionViewDelegate {
+
+}
+
+extension MusicViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let keyword = searchBar.text, !keyword.isEmpty else { return }
+        searchBar.resignFirstResponder()
+        suggestVC.searchAndShowResult(keyword)
     }
 }
 
