@@ -21,7 +21,7 @@ final class MusicViewController: UIViewController {
         return searchController.searchResultsController as! SuggestionViewController
     }
 
-    private let cv = MusicViewCollectionViewManager()
+    private let cv = CollectionViewManager()
 
     private var springMusics = Music()
     private var summerMusics = Music()

@@ -1,5 +1,5 @@
 //
-//  MusicViewCollectionViewManager.swift
+//  CollectionViewManager.swift
 //  LSJAppStoreClone
 //
 //  Created by yimkeul on 5/8/25.
@@ -7,13 +7,15 @@
 
 import UIKit
 
-final class MusicViewCollectionViewManager {
-    enum TestType {
+final class CollectionViewManager {
+
+    enum ViewType {
         case Music
         case Search
     }
+    
     // MARK: - Methods
-    func createCompositionalLayout(of type: TestType) -> UICollectionViewCompositionalLayout {
+    func createCompositionalLayout(of type: ViewType) -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { sectionIndex, environment in
 
             if type == .Music {

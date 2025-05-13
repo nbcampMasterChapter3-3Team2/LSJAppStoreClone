@@ -25,7 +25,7 @@ final class SuggestionViewController: UIViewController {
     private var selectedIndex = 0
     private var selectedType: SelectedType = .Movie
 
-    private let cv = MusicViewCollectionViewManager()
+    private let cv = CollectionViewManager()
 
     // MARK: - UI Components
     private let tableView = UITableView().then {
