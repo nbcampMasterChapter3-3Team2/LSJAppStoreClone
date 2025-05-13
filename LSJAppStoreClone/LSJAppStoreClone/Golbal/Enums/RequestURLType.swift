@@ -1,5 +1,5 @@
 //
-//  ApiUrlType.swift
+//  RequestURLType.swift
 //  LSJAppStoreClone
 //
 //  Created by yimkeul on 5/8/25.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ApiUrlType: Codable {
+enum RequestURLType: Codable {
 
     case Music
     case Movie
@@ -16,7 +16,8 @@ enum ApiUrlType: Codable {
     var url: String {
         switch self {
         case .Music: return "https://itunes.apple.com/search?country=kr&media=music&entity=song&term="
-        default: return ""
+        case .Movie: return "https://itunes.apple.com/search?country=kr&media=movie&entity=movie&term="
+        case .Podcast: return "https://itunes.apple.com/search?country=kr&media=podcast&entity=podcast&term="
         }
     }
 
