@@ -8,20 +8,27 @@
 import UIKit
 
 final class MusicViewCollectionViewManager {
-
+    enum TestType {
+        case Music
+        case Search
+    }
     // MARK: - Methods
-    func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
+    func createCompositionalLayout(of type: TestType) -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { sectionIndex, environment in
 
-            guard let section = Season(rawValue: sectionIndex) else {
-                return self.createDefaultLayout()
-            }
+            if type == .Music {
+                guard let section = Season(rawValue: sectionIndex) else {
+                    return self.createDefaultLayout()
+                }
 
-            switch section {
-            case .spring:
-                return self.createOneItemHorizontalLayout()
-            case .summer, .fall, .winter:
-                return self.createThreeVerticalItemInHorizontalLayout()
+                switch section {
+                case .spring:
+                    return self.createOneItemHorizontalLayout()
+                case .summer, .fall, .winter:
+                    return self.createThreeVerticalItemInHorizontalLayout()
+                }
+            } else {
+                return self.createDefaultLayout()
             }
         }
     }
@@ -92,14 +99,14 @@ final class MusicViewCollectionViewManager {
     private func createDefaultLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalHeight(1)
+            heightDimension: .fractionalHeight(0.1)
         )
 
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalWidth(1)
+            heightDimension: .fractionalWidth(0.1)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 

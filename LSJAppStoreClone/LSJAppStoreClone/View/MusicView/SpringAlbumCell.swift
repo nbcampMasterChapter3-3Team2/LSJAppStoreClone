@@ -61,7 +61,7 @@ final class SpringAlbumCell: UICollectionViewCell {
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        addSubviews(backgroundImageView, overlayView)
+        contentView.addSubviews(backgroundImageView, overlayView)
         overlayView.addSubviews(trackNameLabel, artistNameLabel)
     }
 

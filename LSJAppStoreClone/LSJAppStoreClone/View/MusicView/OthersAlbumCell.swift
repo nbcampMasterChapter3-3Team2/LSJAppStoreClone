@@ -53,7 +53,7 @@ final class OthersAlbumCell: UICollectionViewCell {
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
+        contentView.addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
     }
 
     // MARK: - Layout Helper
