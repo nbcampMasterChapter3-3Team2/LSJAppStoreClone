@@ -17,7 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		86A6E2FC2DCC45BC00FE8622 /* LSJAppStoreClone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSJAppStoreClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8661E1022DD2D7CF006BACA3 /* LSJAppStoreClone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LSJAppStoreClone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -63,16 +63,8 @@
 			isa = PBXGroup;
 			children = (
 				86A6E2FE2DCC45BC00FE8622 /* LSJAppStoreClone */,
-				86A6E2FD2DCC45BC00FE8622 /* Products */,
+				8661E1022DD2D7CF006BACA3 /* LSJAppStoreClone.app */,
 			);
-			sourceTree = "<group>";
-		};
-		86A6E2FD2DCC45BC00FE8622 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				86A6E2FC2DCC45BC00FE8622 /* LSJAppStoreClone.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -104,7 +96,7 @@
 				86D00EF32DCDCED400FCDBBC /* Kingfisher */,
 			);
 			productName = LSJAppStoreClone;
-			productReference = 86A6E2FC2DCC45BC00FE8622 /* LSJAppStoreClone.app */;
+			productReference = 8661E1022DD2D7CF006BACA3 /* LSJAppStoreClone.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -139,7 +131,7 @@
 				86D00EF22DCDCED400FCDBBC /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 86A6E2FD2DCC45BC00FE8622 /* Products */;
+			productRefGroup = 86A6E2F32DCC45BC00FE8622;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
