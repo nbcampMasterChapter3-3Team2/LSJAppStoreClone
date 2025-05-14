@@ -8,7 +8,7 @@
 import Foundation
 
 import RxSwift
-import RxCocoa
+import RxRelay
 
 final class SuggestionViewModel {
 
@@ -37,11 +37,11 @@ final class SuggestionViewModel {
             .subscribe(onNext: { [weak self] suggestion in
                 guard let self = self else { return }
                 switch suggestion {
-                case .movie(let movies, let index):
+                case .movie(_, let index):
                     self.selectedType.accept(.Movie)
                     self.selectedIndex.accept(index)
 
-                case .podcast(let podcasts, let index):
+                case .podcast(_, let index):
                     self.selectedType.accept(.Podcast)
                     self.selectedIndex.accept(index)
                 }

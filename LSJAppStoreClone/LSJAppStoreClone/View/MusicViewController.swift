@@ -34,6 +34,7 @@ final class MusicViewController: UIViewController {
     ).then {
         $0.searchBar.placeholder = "영화, 팟캐스트"
         $0.definesPresentationContext = true
+        $0.obscuresBackgroundDuringPresentation = true
     }
 
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
@@ -70,6 +71,8 @@ final class MusicViewController: UIViewController {
     private func setStyle() {
         self.view.backgroundColor = .systemBackground
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.largeTitleDisplayMode = .always
+        navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.title = "Music"
         navigationItem.searchController = searchController
     }
