@@ -12,7 +12,8 @@ enum Suggestion {
     case podcast(podcast: Podcast, index: Int)
 }
 
-enum SelectedType {
+enum SelectedType: Int, CaseIterable {
+    case Search
     case Movie
     case Podcast
 }

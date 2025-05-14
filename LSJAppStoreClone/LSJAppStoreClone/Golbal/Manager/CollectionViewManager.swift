@@ -80,19 +80,19 @@ final class CollectionViewManager {
             heightDimension: .fractionalWidth(1.2)
         )
         let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
-        group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
+        group.contentInsets = .init(top: 8, leading: 0, bottom: 32, trailing: 0)
 
         let section = NSCollectionLayoutSection(group: group)
         let horizontalInset =  SizeLiterals.Screen.screenWidth * 0.05
         section.contentInsets = NSDirectionalEdgeInsets(
             top: 0,
             leading: horizontalInset,
-            bottom: 0,
+            bottom: 8,
             trailing: horizontalInset
         )
 
 
-        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(60))
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(40))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,

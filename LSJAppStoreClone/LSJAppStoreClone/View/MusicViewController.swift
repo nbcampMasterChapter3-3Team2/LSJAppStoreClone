@@ -152,7 +152,6 @@ final class MusicViewController: UIViewController {
             .disposed(by: disposeBag)
 
         searchBarBinding()
-
     }
 
     private func searchBarBinding() {
@@ -161,6 +160,10 @@ final class MusicViewController: UIViewController {
             .bind { [weak self] text in
             self?.suggestVC.fetchMovieAndPodcast(to: text)
         }.disposed(by: disposeBag)
+
+        suggestVC.onSearchHeaderTap = { [weak self] in
+            self?.searchController.isActive = false
+        }
     }
 
     private func configure() {

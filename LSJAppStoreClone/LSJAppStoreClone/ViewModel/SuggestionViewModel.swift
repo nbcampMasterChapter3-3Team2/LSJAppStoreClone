@@ -33,10 +33,6 @@ final class SuggestionViewModel {
         isShowingSearchResults.accept(false)
     }
 
-    func testSearch() {
-        isShowingSearchResults.accept(true)
-    }
-
     func fetchMovieAndPodcast(to query: String) {
         fetchMovie(to: query)
         fetchPodcast(to: query)

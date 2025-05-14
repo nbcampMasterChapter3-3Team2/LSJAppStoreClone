@@ -17,15 +17,18 @@ final class SearchResultHeaderView: UICollectionReusableView {
 
     // MARK: - UI Components
     private let titleLabel = UILabel().then {
-        $0.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        $0.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         $0.textColor = .label
     }
+
+    var onTap: (() -> Void)?
 
     // MARK: - Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
         setHierarchy()
         setLayout()
+        setupGesture()
     }
 
     required init?(coder: NSCoder) {
@@ -41,13 +44,31 @@ final class SearchResultHeaderView: UICollectionReusableView {
     private func setLayout() {
         titleLabel.snp.makeConstraints {
             $0.leading.equalToSuperview().offset(16)
-            $0.top.equalToSuperview()
+            $0.centerY.equalToSuperview()
         }
     }
 
     // MARK: - Methods
-    func configure(text: String) {
+    func configure(text: String, section: SelectedType) {
         titleLabel.text = text
+        switch section {
+        case .Movie:
+            titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        case .Podcast:
+            titleLabel.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        case .Search:
+            titleLabel.font = UIFont.systemFont(ofSize: 30, weight: .bold)
+        }
+    }
+    private func setupGesture() {
+        // 뷰가 탭을 받을 수 있게
+        isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTapHeader))
+        addGestureRecognizer(tap)
+    }
+
+    @objc private func didTapHeader() {
+        onTap?()
     }
 
 }

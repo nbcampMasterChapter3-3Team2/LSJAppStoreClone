@@ -26,6 +26,7 @@ final class SuggestionViewController: UIViewController {
     private var selectedType: SelectedType = .Movie
 
     private let cv = CollectionViewManager()
+    var onSearchHeaderTap: (() -> Void)?
 
     // MARK: - UI Components
     private let tableView = UITableView().then {
@@ -37,13 +38,19 @@ final class SuggestionViewController: UIViewController {
     }
 
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Search)).then {
-        // 1) Cell 등록
+        // 셀
         $0.register(SearchResultCell.self,
             forCellWithReuseIdentifier: SearchResultCell.id)
 
-        // 3) 기본 속성
+        // 헤더
+        $0.register(SearchResultHeaderView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: SearchResultHeaderView.id)
+
+
         $0.showsHorizontalScrollIndicator = false
         $0.showsVerticalScrollIndicator = false
+
         $0.isHidden = true
         $0.backgroundColor = .systemBackground
     }
@@ -55,6 +62,7 @@ final class SuggestionViewController: UIViewController {
         setHierarchy()
         setLayout()
         setDelegate()
+        setDataSource()
         binding()
     }
 
@@ -65,26 +73,31 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        view.addSubviews(tableView, collectionView)
+        self.view.addSubviews(tableView, collectionView)
+
     }
 
     // MARK: - Layout Helper
     private func setLayout() {
-        tableView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+        tableView.snp.makeConstraints {
+            $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
 
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalTo(view.safeAreaLayoutGuide)
+        collectionView.snp.makeConstraints {
+            $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
     }
 
-    // MARK: - Delegate/DataSource Helper
+    // MARK: - Delegate Helper
     private func setDelegate() {
-        tableView.dataSource = self
         tableView.delegate = self
-        collectionView.dataSource = self
         collectionView.delegate = self
+    }
+
+    // MARK: - DataSource Helper
+    private func setDataSource() {
+        tableView.dataSource = self
+        collectionView.dataSource = self
     }
 
     // MARK: - Methods
@@ -152,22 +165,21 @@ final class SuggestionViewController: UIViewController {
                     resultCount: movies.resultCount,
                     results: sliced
                 )
+
             case .podcast(let podcasts, let index):
                 self.selectedType = .Podcast
                 self.selectedIndex = index
                 let sliced = Array(podcasts.results[index...])
                 self.podcastResults = Podcast(
-                    resultCount: sliced.count,
+                    resultCount: podcasts.resultCount,
                     results: sliced
                 )
-                self.podcastResults = Podcast(resultCount: podcasts.resultCount, results: sliced)
             }
 
             self.tableView.reloadData()
             self.collectionView.reloadData()
         })
             .disposed(by: disposeBag)
-
     }
 
 }
@@ -224,15 +236,17 @@ extension SuggestionViewController: UITableViewDelegate {
 extension SuggestionViewController: UICollectionViewDelegate { }
 
 extension SuggestionViewController: UICollectionViewDataSource {
+
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return 2
+        return SelectedType.allCases.count
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        let section = SelectedType.allCases[section]
         switch section {
-        case 0: return movieResults.results.count
-        case 1: return podcastResults.results.count
-        default: return 0
+        case .Movie: return movieResults.results.count
+        case .Podcast: return podcastResults.results.count
+        case .Search: return 0
         }
     }
 
@@ -245,17 +259,45 @@ extension SuggestionViewController: UICollectionViewDataSource {
             return UICollectionViewCell()
         }
 
-        switch indexPath.section {
-        case 0:
+        switch SelectedType.allCases[indexPath.section] {
+        case .Movie:
             let movie = movieResults.results[indexPath.item]
             cell.configureMovie(with: movie)
-        case 1:
+        case .Podcast:
             let podcast = podcastResults.results[indexPath.item]
             cell.configurePodcast(with: podcast)
-        default:
+        case .Search:
             return UICollectionViewCell()
         }
         return cell
+    }
+
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
+        guard let headerView = collectionView.dequeueReusableSupplementaryView(
+            ofKind: kind,
+            withReuseIdentifier: SearchResultHeaderView.id,
+            for: indexPath
+        ) as? SearchResultHeaderView else {
+            return UICollectionReusableView()
+        }
+
+        switch SelectedType.allCases[indexPath.section] {
+        case .Search:
+            headerView.configure(text: viewModel.currentKeyworkd, section: .Search)
+            headerView.onTap = { [weak self] in
+                self?.viewModel.cancelSearch()
+                self?.onSearchHeaderTap?()
+            }
+        case .Movie:
+            headerView.configure(text: "Movie", section: .Movie)
+            headerView.onTap = nil
+
+        case .Podcast:
+            headerView.configure(text: "Podcast", section: .Podcast)
+            headerView.onTap = nil
+        }
+        return headerView
     }
 }
 
