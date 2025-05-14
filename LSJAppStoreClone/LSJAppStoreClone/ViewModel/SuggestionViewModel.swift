@@ -13,20 +13,41 @@ import RxCocoa
 final class SuggestionViewModel {
 
     // MARK: - Properties
-    private let disposBag = DisposeBag()
+    private let disposeBag = DisposeBag()
+    private var movieResults = Movie()
+    private var podcastResults = Podcast()
 
-    let movieSubject = BehaviorSubject(value: Movie())
-    let podcastSubject = BehaviorSubject(value: Podcast())
-    let isShowingSearchResults = BehaviorRelay<Bool>(value: false)
     let selectedSuggestion = PublishSubject<Suggestion>()
+
+    let movieSubject    = BehaviorSubject(value: Movie())
+    let podcastSubject  = BehaviorSubject(value: Podcast())
+    let isShowingSearchResults = BehaviorRelay<Bool>(value: false)
     var currentKeyworkd = ""
+
+    let selectedType    = BehaviorRelay<SelectedType>(value: .Search)
+    let selectedIndex   = BehaviorRelay<Int>(value: 0)
 
     // MARK: - Initializer
     init() {
         selectedSuggestion
                    .map { _ in true }
                    .bind(to: isShowingSearchResults)
-                   .disposed(by: disposBag)
+                   .disposed(by: disposeBag)
+
+        selectedSuggestion
+            .subscribe(onNext: { [weak self] suggestion in
+                guard let self = self else { return }
+                switch suggestion {
+                case .movie(let movies, let index):
+                    self.selectedType.accept(.Movie)
+                    self.selectedIndex.accept(index)
+
+                case .podcast(let podcasts, let index):
+                    self.selectedType.accept(.Podcast)
+                    self.selectedIndex.accept(index)
+                }
+            })
+            .disposed(by: disposeBag)
     }
 
     func cancelSearch() {
@@ -59,7 +80,7 @@ final class SuggestionViewModel {
                 NSLog("MovieVM FetchMovie Error : \(error)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
     }
 
     private func fetchPodcast(to query: String) {
@@ -81,7 +102,7 @@ final class SuggestionViewModel {
                 NSLog("PodcastVM FetchPodcast Error : \(error)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
     }
 
 }

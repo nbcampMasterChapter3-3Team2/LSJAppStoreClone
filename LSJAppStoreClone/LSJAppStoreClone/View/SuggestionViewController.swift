@@ -22,9 +22,6 @@ final class SuggestionViewController: UIViewController {
     private var movieResults = Movie()
     private var podcastResults = Podcast()
 
-    private var selectedIndex = 0
-    private var selectedType: SelectedType = .Movie
-
     private let cv = CollectionViewManager()
     var onSearchHeaderTap: (() -> Void)?
 
@@ -102,14 +99,15 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Methods
     func fetchMovieAndPodcast(to kw: String) {
-        self.selectedIndex = 0
         viewModel.cancelSearch()
         viewModel.fetchMovieAndPodcast(to: kw)
     }
 
     func searchAndShowResult(_ kw: String) {
         viewModel.cancelSearch()
+        viewModel.selectedIndex.accept(0)
         viewModel.isShowingSearchResults.accept(true)
+        viewModel.selectedType.accept(.Search)
         viewModel.fetchMovieAndPodcast(to: kw)
     }
 
@@ -158,8 +156,6 @@ final class SuggestionViewController: UIViewController {
             guard let self = self else { return }
             switch suggestion {
             case .movie(let movies, let index):
-                self.selectedType = .Movie
-                self.selectedIndex = index
                 let sliced = Array(movies.results[index...])
                 self.movieResults = Movie(
                     resultCount: movies.resultCount,
@@ -167,8 +163,6 @@ final class SuggestionViewController: UIViewController {
                 )
 
             case .podcast(let podcasts, let index):
-                self.selectedType = .Podcast
-                self.selectedIndex = index
                 let sliced = Array(podcasts.results[index...])
                 self.podcastResults = Podcast(
                     resultCount: podcasts.resultCount,
@@ -182,7 +176,19 @@ final class SuggestionViewController: UIViewController {
             .disposed(by: disposeBag)
     }
 
+    private var displayedSections: [SelectedType] {
+        switch viewModel.selectedType.value {
+        case .Search:
+            return [.Search, .Movie, .Podcast]
+        case .Movie:
+            return [.Search, .Movie]
+        case .Podcast:
+            return [.Search, .Podcast]
+        }
+    }
+
 }
+
 
 extension SuggestionViewController: UITableViewDataSource {
 
@@ -224,11 +230,9 @@ extension SuggestionViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
 
-        self.selectedType = indexPath.section == 0 ? .Movie : .Podcast
-        self.selectedIndex = indexPath.item
-
-        let suggestion: Suggestion = indexPath.section == 0 ?
-            .movie(movie: self.movieResults, index: indexPath.item): .podcast(podcast: self.podcastResults, index: indexPath.item)
+        let suggestion: Suggestion = indexPath.section == 0
+            ? .movie(movie: movieResults, index: indexPath.row)
+        : .podcast(podcast: podcastResults, index: indexPath.row)
         viewModel.selectedSuggestion.onNext(suggestion)
     }
 }
@@ -238,15 +242,15 @@ extension SuggestionViewController: UICollectionViewDelegate { }
 extension SuggestionViewController: UICollectionViewDataSource {
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return SelectedType.allCases.count
+        return displayedSections.count
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = SelectedType.allCases[section]
+        let section = displayedSections[section]
         switch section {
+        case .Search: return 0
         case .Movie: return movieResults.results.count
         case .Podcast: return podcastResults.results.count
-        case .Search: return 0
         }
     }
 
@@ -258,8 +262,7 @@ extension SuggestionViewController: UICollectionViewDataSource {
         ) as? SearchResultCell else {
             return UICollectionViewCell()
         }
-
-        switch SelectedType.allCases[indexPath.section] {
+        switch displayedSections[indexPath.section] {
         case .Movie:
             let movie = movieResults.results[indexPath.item]
             cell.configureMovie(with: movie)
@@ -282,7 +285,7 @@ extension SuggestionViewController: UICollectionViewDataSource {
             return UICollectionReusableView()
         }
 
-        switch SelectedType.allCases[indexPath.section] {
+        switch displayedSections[indexPath.section] {
         case .Search:
             headerView.configure(text: viewModel.currentKeyworkd, section: .Search)
             headerView.onTap = { [weak self] in
@@ -290,11 +293,11 @@ extension SuggestionViewController: UICollectionViewDataSource {
                 self?.onSearchHeaderTap?()
             }
         case .Movie:
-            headerView.configure(text: movieResults.results.isEmpty ? "" : "Movie", section: .Movie)
+            headerView.configure(text: "Movie", section: .Movie)
             headerView.onTap = nil
 
         case .Podcast:
-            headerView.configure(text: podcastResults.results.isEmpty ? "" : "Podcast", section: .Podcast)
+            headerView.configure(text: "Podcast", section: .Podcast)
             headerView.onTap = nil
         }
         return headerView
