@@ -17,14 +17,29 @@ final class SearchResultCell: UICollectionViewCell {
     static let id = "SearchResultCell"
 
     // MARK: - UI Components
-    private let titleLabel = UILabel().then {
-        $0.text = "테스트"
-        $0.textColor = .label
+    private let backgroundImageView = UIImageView().then {
+        $0.contentMode = .scaleToFill
+        $0.layer.cornerRadius = 16
+        $0.clipsToBounds = true
     }
+
+    private let overlayView = UIView().then {
+        $0.backgroundColor = UIColor(white: 0, alpha: 0.6)
+        $0.layer.cornerRadius = 16
+        $0.layer.maskedCorners = CACornerMask(arrayLiteral: .layerMinXMaxYCorner, .layerMaxXMaxYCorner)
+    }
+
+    private let trackNameLabel = UILabel().then {
+        $0.font = .systemFont(ofSize: 16, weight: .bold)
+        $0.textColor = .white
+        $0.numberOfLines = 1
+    }
+
 
     // MARK: - Initializer
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setStyle()
         setHierarchy()
         setLayout()
     }
@@ -32,30 +47,60 @@ final class SearchResultCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
+    // MARK: - Style Helper
+    private func setStyle() {
+        self.contentView.backgroundColor = .systemGray5
+        self.contentView.layer.cornerRadius = 16
+        self.contentView.layer.masksToBounds = true
+
+    }
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        contentView.addSubviews(titleLabel)
+        contentView.addSubviews(backgroundImageView, overlayView)
+        overlayView.addSubviews(trackNameLabel)
     }
 
     // MARK: - Layout Helper
     private func setLayout() {
-        titleLabel.snp.makeConstraints {
+        backgroundImageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+
+        overlayView.snp.makeConstraints {
+            $0.leading.trailing.bottom.equalToSuperview()
+            $0.height.equalTo(60)
+        }
+
+        trackNameLabel.snp.makeConstraints {
+            $0.leading.equalToSuperview().offset(16)
             $0.centerY.equalToSuperview()
         }
+
     }
 
     func configureMovie(with data: MovieResult) {
-        titleLabel.text = data.trackName
+        guard let backgroundImageUrl = URL(string: data.artworkUrl100) else {
+            return
+        }
+
+        backgroundImageView.kf.setImage(with: backgroundImageUrl)
+        trackNameLabel.text = data.trackName
     }
 
     func configurePodcast(with data: PodcastResult) {
-        titleLabel.text = data.trackName
+        guard let backgroundImageUrl = URL(string: data.artworkUrl600) else {
+            return
+        }
+        backgroundImageView.kf.setImage(with: backgroundImageUrl)
+        trackNameLabel.text = data.trackName
     }
 
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        backgroundImageView.image = nil
+        trackNameLabel.text = nil
     }
 
 }

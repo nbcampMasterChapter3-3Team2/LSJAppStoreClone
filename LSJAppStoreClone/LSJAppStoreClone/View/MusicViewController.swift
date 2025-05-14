@@ -189,7 +189,8 @@ extension MusicViewController: UICollectionViewDataSource {
                 ) as? SpringAlbumCell else {
                     return UICollectionViewCell()
                 }
-                cell.configure(data: springMusics, index: indexPath.item)
+                let album = springMusics.results[indexPath.item]
+                cell.configure(data: album)
                 return cell
 
             case .summer:
@@ -200,7 +201,8 @@ extension MusicViewController: UICollectionViewDataSource {
                     return UICollectionViewCell()
                 }
 
-                cell.configure(data: summerMusics, index: indexPath.item)
+                let album = summerMusics.results[indexPath.item]
+                cell.configure(data: album)
                 return cell
 
             case .fall:
@@ -210,8 +212,9 @@ extension MusicViewController: UICollectionViewDataSource {
                 ) as? OthersAlbumCell else {
                     return UICollectionViewCell()
                 }
+                let album = fallMusics.results[indexPath.item]
+                cell.configure(data: album)
 
-                cell.configure(data: fallMusics, index: indexPath.item)
                 return cell
 
             case .winter:
@@ -222,7 +225,9 @@ extension MusicViewController: UICollectionViewDataSource {
                     return UICollectionViewCell()
                 }
 
-                cell.configure(data: winterMusics, index: indexPath.item)
+                let album = winterMusics.results[indexPath.item]
+                cell.configure(data: album)
+
                 return cell
             }
     }

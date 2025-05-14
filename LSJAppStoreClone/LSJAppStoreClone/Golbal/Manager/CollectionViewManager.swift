@@ -30,7 +30,7 @@ final class CollectionViewManager {
                     return self.createThreeVerticalItemInHorizontalLayout()
                 }
             } else {
-                return self.createDefaultLayout()
+                return self.createOneItemVerticalLayout()
             }
         }
     }
@@ -56,6 +56,43 @@ final class CollectionViewManager {
         section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+
+        section.boundarySupplementaryItems = [header]
+
+        return section
+    }
+
+    private func createOneItemVerticalLayout() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
+        )
+
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalWidth(1.2)
+        )
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+        group.contentInsets = .init(top: 16, leading: 0, bottom: 0, trailing: 0)
+
+        let section = NSCollectionLayoutSection(group: group)
+        let horizontalInset =  SizeLiterals.Screen.screenWidth * 0.05
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: 0,
+            leading: horizontalInset,
+            bottom: 0,
+            trailing: horizontalInset
+        )
+
+
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(60))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,

@@ -55,6 +55,7 @@ final class SpringAlbumCell: UICollectionViewCell {
 
     // MARK: - Style Helper
     private func setStyle() {
+        self.contentView.backgroundColor = .systemGray5
         self.contentView.layer.cornerRadius = 16
         self.contentView.layer.masksToBounds = true
     }
@@ -89,20 +90,22 @@ final class SpringAlbumCell: UICollectionViewCell {
     }
 
     // MARK: - Methods
-    func configure(data: Music, index: Int) {
-        guard let backgroundImageUrl = URL(string: data.results[index].artworkUrl100) else {
-            NSLog("ERROR : Configure \(index)")
+    func configure(data: MusicResult) {
+        guard let backgroundImageUrl = URL(string: data.artworkUrl100) else {
+            NSLog("ERROR : Configure SpringAlbum")
             return
         }
 
         backgroundImageView.kf.setImage(with: backgroundImageUrl)
-        trackNameLabel.text = data.results[index].trackName
-        artistNameLabel.text = data.results[index].artistName
+        trackNameLabel.text = data.trackName
+        artistNameLabel.text = data.artistName
     }
 
     override func prepareForReuse() {
         super.prepareForReuse()
         backgroundImageView.image = nil
+        trackNameLabel.text = nil
+        artistNameLabel.text = nil
     }
 }
 

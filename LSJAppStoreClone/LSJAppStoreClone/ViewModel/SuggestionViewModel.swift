@@ -19,6 +19,7 @@ final class SuggestionViewModel {
     let podcastSubject = BehaviorSubject(value: Podcast())
     let isShowingSearchResults = BehaviorRelay<Bool>(value: false)
     let selectedSuggestion = PublishSubject<Suggestion>()
+    var currentKeyworkd = ""
 
     // MARK: - Initializer
     init() {
@@ -39,6 +40,7 @@ final class SuggestionViewModel {
     func fetchMovieAndPodcast(to query: String) {
         fetchMovie(to: query)
         fetchPodcast(to: query)
+        currentKeyworkd = query
     }
 
     private func fetchMovie(to query: String) {
