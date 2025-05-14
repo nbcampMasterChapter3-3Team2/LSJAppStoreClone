@@ -8,15 +8,20 @@
 import UIKit
 
 import RxSwift
+import RxCocoa
 import SnapKit
 import Then
 
 final class MusicViewController: UIViewController {
 
     // MARK: - Properties
-    private let disposBag = DisposeBag()
+    private let disposeBag = DisposeBag()
     private let viewModel = MusicViewModel()
-    private let cv = MusicViewCollectionViewManager()
+    private var suggestVC: SuggestionViewController {
+        return searchController.searchResultsController as! SuggestionViewController
+    }
+
+    private let cv = CollectionViewManager()
 
     private var springMusics = Music()
     private var summerMusics = Music()
@@ -24,11 +29,14 @@ final class MusicViewController: UIViewController {
     private var winterMusics = Music()
 
     // MARK: - UI Components
-    private let searchController = UISearchController(searchResultsController: nil).then {
-        $0.searchBar.placeholder = "영화, 팟케스트"
+    private let searchController = UISearchController(
+        searchResultsController: SuggestionViewController()
+    ).then {
+        $0.searchBar.placeholder = "영화, 팟캐스트"
+        $0.definesPresentationContext = true
     }
 
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout()).then {
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
         // 1) Cell 등록
         $0.register(SpringAlbumCell.self,
             forCellWithReuseIdentifier: SpringAlbumCell.id)
@@ -81,6 +89,7 @@ final class MusicViewController: UIViewController {
     // MARK: - Deleate Helper
     private func setDelegate() {
         collectionView.delegate = self
+        searchController.searchBar.delegate = self
     }
 
     // MARK: - DataSource Helper
@@ -101,7 +110,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.summerMusicSubject
             .observe(on: MainScheduler.instance)
@@ -114,7 +123,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.fallMusicSubject
             .observe(on: MainScheduler.instance)
@@ -127,7 +136,7 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
 
         viewModel.winterMusicSubject
             .observe(on: MainScheduler.instance)
@@ -140,76 +149,88 @@ final class MusicViewController: UIViewController {
                 NSLog("error binding : \(error.localizedDescription)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
+
+        searchBarBinding()
     }
 
-    private func configure() {
+    private func searchBarBinding() {
+        self.searchController.searchBar.rx.text.orEmpty
+            .distinctUntilChanged()
+            .bind { [weak self] text in
+            self?.suggestVC.fetchMovieAndPodcast(to: text)
+        }.disposed(by: disposeBag)
 
+        /// SuggesVC SearchController 밑에 입력한 text(또는 view)를 클릭시
+        /// searchController 해제 함수 (Closure 함수)
+        suggestVC.onSearchHeaderTap = { [weak self] in
+            self?.searchController.isActive = false
+        }
     }
-}
-
-extension MusicViewController: UICollectionViewDelegate {
-
 }
 
 extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = Season.allCases[section]
-        switch section {
-        case .spring: return springMusics.results.count
-        case .summer: return summerMusics.results.count
-        case .fall: return fallMusics.results.count
-        case .winter: return winterMusics.results.count
-        }
+            let section = Season.allCases[section]
+            switch section {
+            case .spring: return springMusics.results.count
+            case .summer: return summerMusics.results.count
+            case .fall: return fallMusics.results.count
+            case .winter: return winterMusics.results.count
+            }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            switch Season.allCases[indexPath.section] {
+            case .spring:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: SpringAlbumCell.id,
+                    for: indexPath
+                ) as? SpringAlbumCell else {
+                    return UICollectionViewCell()
+                }
+                let album = springMusics.results[indexPath.item]
+                cell.configure(data: album)
+                return cell
 
-        switch Season.allCases[indexPath.section] {
-        case .spring:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: SpringAlbumCell.id,
-                for: indexPath
-            ) as? SpringAlbumCell else {
-                return UICollectionViewCell()
+            case .summer:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+
+                let album = summerMusics.results[indexPath.item]
+                cell.configure(data: album)
+                return cell
+
+            case .fall:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+                let album = fallMusics.results[indexPath.item]
+                cell.configure(data: album)
+
+                return cell
+
+            case .winter:
+                guard let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: OthersAlbumCell.id,
+                    for: indexPath
+                ) as? OthersAlbumCell else {
+                    return UICollectionViewCell()
+                }
+
+                let album = winterMusics.results[indexPath.item]
+                cell.configure(data: album)
+
+                return cell
             }
-            cell.configure(data: springMusics, index: indexPath.item)
-            return cell
-
-        case .summer:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: summerMusics, index: indexPath.item)
-            return cell
-
-        case .fall:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: fallMusics, index: indexPath.item)
-            return cell
-
-        case .winter:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            cell.configure(data: winterMusics, index: indexPath.item)
-            return cell
-        }
     }
 
 
@@ -231,6 +252,19 @@ extension MusicViewController: UICollectionViewDataSource {
         headerView.configure(season: sectionType)
 
         return headerView
+    }
+}
+
+// TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
+extension MusicViewController: UICollectionViewDelegate {
+
+}
+
+extension MusicViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let keyword = searchBar.text, !keyword.isEmpty else { return }
+        searchBar.resignFirstResponder()
+        suggestVC.searchAndShowResult(keyword)
     }
 }
 

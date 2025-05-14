@@ -1,5 +1,5 @@
 //
-//  MusicViewCollectionViewManager.swift
+//  CollectionViewManager.swift
 //  LSJAppStoreClone
 //
 //  Created by yimkeul on 5/8/25.
@@ -7,21 +7,30 @@
 
 import UIKit
 
-final class MusicViewCollectionViewManager {
+final class CollectionViewManager {
 
+    enum ViewType {
+        case Music
+        case Search
+    }
+    
     // MARK: - Methods
-    func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
+    func createCompositionalLayout(of type: ViewType) -> UICollectionViewCompositionalLayout {
         return UICollectionViewCompositionalLayout { sectionIndex, environment in
 
-            guard let section = Season(rawValue: sectionIndex) else {
-                return self.createDefaultLayout()
-            }
+            if type == .Music {
+                guard let section = Season(rawValue: sectionIndex) else {
+                    return self.createDefaultLayout()
+                }
 
-            switch section {
-            case .spring:
-                return self.createOneItemHorizontalLayout()
-            case .summer, .fall, .winter:
-                return self.createThreeVerticalItemInHorizontalLayout()
+                switch section {
+                case .spring:
+                    return self.createOneItemHorizontalLayout()
+                case .summer, .fall, .winter:
+                    return self.createThreeVerticalItemInHorizontalLayout()
+                }
+            } else {
+                return self.createOneItemVerticalLayout()
             }
         }
     }
@@ -47,6 +56,43 @@ final class MusicViewCollectionViewManager {
         section.interGroupSpacing = SizeLiterals.Screen.screenWidth * 0.045
 
         let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+        let header = NSCollectionLayoutBoundarySupplementaryItem(
+            layoutSize: headerSize,
+            elementKind: UICollectionView.elementKindSectionHeader,
+            alignment: .top
+        )
+
+        section.boundarySupplementaryItems = [header]
+
+        return section
+    }
+
+    private func createOneItemVerticalLayout() -> NSCollectionLayoutSection {
+        let itemSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalHeight(1)
+        )
+
+        let item = NSCollectionLayoutItem(layoutSize: itemSize)
+
+        let groupSize = NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .fractionalWidth(1.2)
+        )
+        let group = NSCollectionLayoutGroup.vertical(layoutSize: groupSize, subitems: [item])
+        group.contentInsets = .init(top: 8, leading: 0, bottom: 32, trailing: 0)
+
+        let section = NSCollectionLayoutSection(group: group)
+        let horizontalInset =  SizeLiterals.Screen.screenWidth * 0.05
+        section.contentInsets = NSDirectionalEdgeInsets(
+            top: 0,
+            leading: horizontalInset,
+            bottom: 8,
+            trailing: horizontalInset
+        )
+
+
+        let headerSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .estimated(40))
         let header = NSCollectionLayoutBoundarySupplementaryItem(
             layoutSize: headerSize,
             elementKind: UICollectionView.elementKindSectionHeader,
@@ -92,14 +138,14 @@ final class MusicViewCollectionViewManager {
     private func createDefaultLayout() -> NSCollectionLayoutSection {
         let itemSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalHeight(1)
+            heightDimension: .fractionalHeight(0.1)
         )
 
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
 
         let groupSize = NSCollectionLayoutSize(
             widthDimension: .fractionalWidth(1),
-            heightDimension: .fractionalWidth(1)
+            heightDimension: .fractionalWidth(0.1)
         )
         let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 

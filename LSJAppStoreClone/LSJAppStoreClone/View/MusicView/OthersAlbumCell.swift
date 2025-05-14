@@ -53,7 +53,7 @@ final class OthersAlbumCell: UICollectionViewCell {
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
+        contentView.addSubviews(artworkImageView, trackNameLabel, artistNameLabel, divider)
     }
 
     // MARK: - Layout Helper
@@ -83,15 +83,15 @@ final class OthersAlbumCell: UICollectionViewCell {
         }
     }
 
-    func configure(data: Music, index: Int) {
-        guard let artworkImageUrl = URL(string: data.results[index].artworkUrl100) else {
-            NSLog("ERROR : Configure \(index)")
+    func configure(data: MusicResult) {
+        guard let artworkImageUrl = URL(string: data.artworkUrl100) else {
+            NSLog("ERROR : Configure")
             return
         }
 
         artworkImageView.kf.setImage(with: artworkImageUrl)
-        trackNameLabel.text = data.results[index].trackName
-        artistNameLabel.text = data.results[index].artistName
+        trackNameLabel.text = data.trackName
+        artistNameLabel.text = data.artistName
     }
 
     override func prepareForReuse() {
