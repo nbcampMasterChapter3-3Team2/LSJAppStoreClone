@@ -12,6 +12,7 @@ import Then
 
 final class SuggestionTableViewCell: UITableViewCell {
 
+    // MARK: - Properties
     static let id = "SuggestionTableViewCell"
 
     // MARK: - UI Components
@@ -36,11 +37,11 @@ final class SuggestionTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Hierarchy & Layout
+    // MARK: - Hierarchy Helper
     private func setHierarchy() {
         contentView.addSubviews(iconLabel, titleLabel)
     }
-
+    // MARK: - Layout Helper
     private func setLayout() {
         iconLabel.snp.makeConstraints {
             $0.centerY.equalToSuperview()
@@ -52,10 +53,9 @@ final class SuggestionTableViewCell: UITableViewCell {
             $0.leading.equalTo(iconLabel.snp.trailing).offset(8)
             $0.trailing.lessThanOrEqualToSuperview().offset(-16)
         }
-
     }
 
-    // MARK: - Configuration
+    // MARK: - Methods
     func configureMovie(with result: MovieResult) {
         iconLabel.image = UIImage(systemName: "movieclapper")
         titleLabel.text = result.trackName
@@ -66,9 +66,9 @@ final class SuggestionTableViewCell: UITableViewCell {
         titleLabel.text = result.trackName
     }
 
-    // MARK: - Reuse
     override func prepareForReuse() {
         super.prepareForReuse()
+        iconLabel.image = nil
         titleLabel.text = nil
     }
 }

@@ -161,13 +161,11 @@ final class MusicViewController: UIViewController {
             self?.suggestVC.fetchMovieAndPodcast(to: text)
         }.disposed(by: disposeBag)
 
+        /// SuggesVC SearchController 밑에 입력한 text(또는 view)를 클릭시
+        /// searchController 해제 함수 (Closure 함수)
         suggestVC.onSearchHeaderTap = { [weak self] in
             self?.searchController.isActive = false
         }
-    }
-
-    private func configure() {
-
     }
 }
 
@@ -257,6 +255,7 @@ extension MusicViewController: UICollectionViewDataSource {
     }
 }
 
+// TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
 extension MusicViewController: UICollectionViewDelegate {
 
 }

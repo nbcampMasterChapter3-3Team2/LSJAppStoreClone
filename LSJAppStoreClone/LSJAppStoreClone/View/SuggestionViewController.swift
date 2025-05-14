@@ -13,9 +13,9 @@ import RxCocoa
 import SnapKit
 import Then
 
-
 final class SuggestionViewController: UIViewController {
 
+    // MARK: - Properties
     private let disposeBag = DisposeBag()
     private let viewModel = SuggestionViewModel()
 
@@ -23,6 +23,7 @@ final class SuggestionViewController: UIViewController {
     private var podcastResults = Podcast()
 
     private let cv = CollectionViewManager()
+
     var onSearchHeaderTap: (() -> Void)?
 
     // MARK: - UI Components
@@ -35,11 +36,9 @@ final class SuggestionViewController: UIViewController {
     }
 
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Search)).then {
-        // 셀
         $0.register(SearchResultCell.self,
             forCellWithReuseIdentifier: SearchResultCell.id)
 
-        // 헤더
         $0.register(SearchResultHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: SearchResultHeaderView.id)
@@ -71,7 +70,6 @@ final class SuggestionViewController: UIViewController {
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
         self.view.addSubviews(tableView, collectionView)
-
     }
 
     // MARK: - Layout Helper
@@ -98,19 +96,6 @@ final class SuggestionViewController: UIViewController {
     }
 
     // MARK: - Methods
-    func fetchMovieAndPodcast(to kw: String) {
-        viewModel.cancelSearch()
-        viewModel.fetchMovieAndPodcast(to: kw)
-    }
-
-    func searchAndShowResult(_ kw: String) {
-        viewModel.cancelSearch()
-        viewModel.selectedIndex.accept(0)
-        viewModel.isShowingSearchResults.accept(true)
-        viewModel.selectedType.accept(.Search)
-        viewModel.fetchMovieAndPodcast(to: kw)
-    }
-
     private func binding() {
         viewModel.movieSubject
             .observe(on: MainScheduler.instance)
@@ -176,6 +161,19 @@ final class SuggestionViewController: UIViewController {
             .disposed(by: disposeBag)
     }
 
+    func fetchMovieAndPodcast(to kw: String) {
+        viewModel.cancelSearch()
+        viewModel.fetchMovieAndPodcast(to: kw)
+    }
+
+    func searchAndShowResult(_ kw: String) {
+        viewModel.cancelSearch()
+        viewModel.selectedIndex.accept(0)
+        viewModel.isShowingSearchResults.accept(true)
+        viewModel.selectedType.accept(.Search)
+        viewModel.fetchMovieAndPodcast(to: kw)
+    }
+
     private var displayedSections: [SelectedType] {
         switch viewModel.selectedType.value {
         case .Search:
@@ -186,9 +184,7 @@ final class SuggestionViewController: UIViewController {
             return [.Search, .Podcast]
         }
     }
-
 }
-
 
 extension SuggestionViewController: UITableViewDataSource {
 
@@ -237,6 +233,7 @@ extension SuggestionViewController: UITableViewDelegate {
     }
 }
 
+// TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
 extension SuggestionViewController: UICollectionViewDelegate { }
 
 extension SuggestionViewController: UICollectionViewDataSource {

@@ -47,6 +47,7 @@ final class SearchResultCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
+
     // MARK: - Style Helper
     private func setStyle() {
         self.contentView.backgroundColor = .systemGray5
@@ -76,9 +77,9 @@ final class SearchResultCell: UICollectionViewCell {
             $0.leading.equalToSuperview().offset(16)
             $0.centerY.equalToSuperview()
         }
-
     }
 
+    // MARK: - Methods
     func configureMovie(with data: MovieResult) {
         guard let backgroundImageUrl = URL(string: data.artworkUrl100) else {
             return
@@ -95,7 +96,6 @@ final class SearchResultCell: UICollectionViewCell {
         backgroundImageView.kf.setImage(with: backgroundImageUrl)
         trackNameLabel.text = data.trackName
     }
-
 
     override func prepareForReuse() {
         super.prepareForReuse()

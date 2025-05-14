@@ -15,13 +15,13 @@ final class SearchResultHeaderView: UICollectionReusableView {
     // MARK: - Properties
     static let id = "SearchResultViewSectionHeader"
 
+    var onTap: (() -> Void)?
+
     // MARK: - UI Components
     private let titleLabel = UILabel().then {
         $0.font = UIFont.systemFont(ofSize: 20, weight: .bold)
         $0.textColor = .label
     }
-
-    var onTap: (() -> Void)?
 
     // MARK: - Initializer
     override init(frame: CGRect) {
@@ -67,9 +67,9 @@ final class SearchResultHeaderView: UICollectionReusableView {
         addGestureRecognizer(tap)
     }
 
+    // MARK: - @objc Methods
     @objc private func didTapHeader() {
         onTap?()
     }
-
 }
 

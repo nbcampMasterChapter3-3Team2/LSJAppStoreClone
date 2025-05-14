@@ -14,18 +14,17 @@ final class SuggestionViewModel {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
+
     private var movieResults = Movie()
     private var podcastResults = Podcast()
 
     let selectedSuggestion = PublishSubject<Suggestion>()
-
     let movieSubject    = BehaviorSubject(value: Movie())
     let podcastSubject  = BehaviorSubject(value: Podcast())
     let isShowingSearchResults = BehaviorRelay<Bool>(value: false)
-    var currentKeyworkd = ""
-
     let selectedType    = BehaviorRelay<SelectedType>(value: .Search)
     let selectedIndex   = BehaviorRelay<Int>(value: 0)
+    var currentKeyworkd = ""
 
     // MARK: - Initializer
     init() {
@@ -50,6 +49,7 @@ final class SuggestionViewModel {
             .disposed(by: disposeBag)
     }
 
+    // MARK: - Methods
     func cancelSearch() {
         isShowingSearchResults.accept(false)
     }
