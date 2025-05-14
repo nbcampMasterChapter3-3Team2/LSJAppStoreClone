@@ -290,11 +290,11 @@ extension SuggestionViewController: UICollectionViewDataSource {
                 self?.onSearchHeaderTap?()
             }
         case .Movie:
-            headerView.configure(text: "Movie", section: .Movie)
+            headerView.configure(text: movieResults.results.isEmpty ? "" : "Movie", section: .Movie)
             headerView.onTap = nil
 
         case .Podcast:
-            headerView.configure(text: "Podcast", section: .Podcast)
+            headerView.configure(text: podcastResults.results.isEmpty ? "" : "Podcast", section: .Podcast)
             headerView.onTap = nil
         }
         return headerView
