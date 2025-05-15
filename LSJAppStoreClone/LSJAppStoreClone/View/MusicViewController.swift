@@ -17,20 +17,12 @@ final class MusicViewController: UIViewController {
     // MARK: - Properties
     private let disposeBag = DisposeBag()
     private let viewModel = MusicViewModel()
-    private var suggestVC: SuggestionViewController {
-        return searchController.searchResultsController as! SuggestionViewController
-    }
-
+    private let suggestVC = SuggestionViewController()
     private let cv = CollectionViewManager()
 
-    private var springMusics = Music()
-    private var summerMusics = Music()
-    private var fallMusics = Music()
-    private var winterMusics = Music()
-
     // MARK: - UI Components
-    private let searchController = UISearchController(
-        searchResultsController: SuggestionViewController()
+    private lazy var searchController = UISearchController(
+        searchResultsController: suggestVC
     ).then {
         $0.searchBar.placeholder = "영화, 팟캐스트"
         $0.definesPresentationContext = true
@@ -38,18 +30,15 @@ final class MusicViewController: UIViewController {
     }
 
     private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
-        // 1) Cell 등록
         $0.register(SpringAlbumCell.self,
             forCellWithReuseIdentifier: SpringAlbumCell.id)
         $0.register(OthersAlbumCell.self,
             forCellWithReuseIdentifier: OthersAlbumCell.id)
 
-        // 2) Header 등록
         $0.register(MusicViewSectionHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
             withReuseIdentifier: MusicViewSectionHeaderView.id)
 
-        // 3) 기본 속성
         $0.showsHorizontalScrollIndicator = false
         $0.showsVerticalScrollIndicator = false
 
@@ -102,57 +91,14 @@ final class MusicViewController: UIViewController {
 
     // MARK: - Methods
     private func binding() {
-        viewModel.springMusicSubject
-            .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] musics in
-                self?.springMusics = musics
-                self?.collectionView.reloadSections(IndexSet(integer: Season.spring.rawValue))
-            },
-            onError: { error in
-                NSLog("error binding : \(error.localizedDescription)")
-            }
-        )
-            .disposed(by: disposeBag)
-
-        viewModel.summerMusicSubject
-            .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] musics in
-                self?.summerMusics = musics
-                self?.collectionView.reloadSections(IndexSet(integer: Season.summer.rawValue))
-            },
-            onError: { error in
-                NSLog("error binding : \(error.localizedDescription)")
-            }
-        )
-            .disposed(by: disposeBag)
-
-        viewModel.fallMusicSubject
-            .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] musics in
-                self?.fallMusics = musics
-                self?.collectionView.reloadSections(IndexSet(integer: Season.fall.rawValue))
-            },
-            onError: { error in
-                NSLog("error binding : \(error.localizedDescription)")
-            }
-        )
-            .disposed(by: disposeBag)
-
-        viewModel.winterMusicSubject
-            .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] musics in
-                self?.winterMusics = musics
-                self?.collectionView.reloadSections(IndexSet(integer: Season.winter.rawValue))
-            },
-            onError: { error in
-                NSLog("error binding : \(error.localizedDescription)")
-            }
-        )
-            .disposed(by: disposeBag)
+        let streams = Season.allCases.compactMap { viewModel.state.musicStreams[$0]
+        }
+          Observable.combineLatest(streams)
+              .observe(on: MainScheduler.instance)
+              .subscribe(onNext: { [weak self] _ in
+                  self?.collectionView.reloadData()
+              })
+              .disposed(by: disposeBag)
 
         searchBarBinding()
     }
@@ -175,17 +121,14 @@ final class MusicViewController: UIViewController {
 extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = Season.allCases[section]
-        switch section {
-        case .spring: return springMusics.results.count
-        case .summer: return summerMusics.results.count
-        case .fall: return fallMusics.results.count
-        case .winter: return winterMusics.results.count
-        }
+        let season = Season.allCases[section]
+            return viewModel.relay(for: season).value.results.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        switch Season.allCases[indexPath.section] {
+        let season = Season.allCases[indexPath.section]
+        let album = viewModel.relay(for: season).value.results[indexPath.item]
+        switch season {
         case .spring:
             guard let cell = collectionView.dequeueReusableCell(
                 withReuseIdentifier: SpringAlbumCell.id,
@@ -193,49 +136,16 @@ extension MusicViewController: UICollectionViewDataSource {
             ) as? SpringAlbumCell else {
                 return UICollectionViewCell()
             }
-            let album = springMusics.results[indexPath.item]
             cell.configure(data: album)
             return cell
-
-        case .summer:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
+        case .summer, .fall, .winter:
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: OthersAlbumCell.id, for: indexPath) as? OthersAlbumCell else {
                 return UICollectionViewCell()
             }
-
-            let album = summerMusics.results[indexPath.item]
             cell.configure(data: album)
-            return cell
-
-        case .fall:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-            let album = fallMusics.results[indexPath.item]
-            cell.configure(data: album)
-
-            return cell
-
-        case .winter:
-            guard let cell = collectionView.dequeueReusableCell(
-                withReuseIdentifier: OthersAlbumCell.id,
-                for: indexPath
-            ) as? OthersAlbumCell else {
-                return UICollectionViewCell()
-            }
-
-            let album = winterMusics.results[indexPath.item]
-            cell.configure(data: album)
-
             return cell
         }
     }
-
 
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return Season.allCases.count
@@ -263,21 +173,9 @@ extension MusicViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 
-        // 1) 모델 추출
         let season = Season.allCases[indexPath.section]
-        let selectedItem: MusicResult
-        switch season {
-        case .spring:
-            selectedItem = springMusics.results[indexPath.item]
-        case .summer:
-            selectedItem = summerMusics.results[indexPath.item]
-        case .fall:
-            selectedItem = fallMusics.results[indexPath.item]
-        case .winter:
-            selectedItem = winterMusics.results[indexPath.item]
-        }
+        let item   = viewModel.relay(for: season).value.results[indexPath.item]
 
-        // 2) 스냅샷 생성
         let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
         let originalFrame = cell.convert(cell.bounds, to: view)
         snapshot.frame = originalFrame
@@ -285,7 +183,7 @@ extension MusicViewController: UICollectionViewDelegate {
         cell.isHidden = true
 
         let detailVC = DetailViewController()
-        detailVC.configure(type: .Music, to: selectedItem)
+        detailVC.configure(type: .Music, to: item)
 
         detailVC.modalPresentationStyle = .overFullScreen
         self.present(detailVC, animated: false) {
@@ -294,8 +192,6 @@ extension MusicViewController: UICollectionViewDelegate {
         }
     }
 }
-
-
 
 extension MusicViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
