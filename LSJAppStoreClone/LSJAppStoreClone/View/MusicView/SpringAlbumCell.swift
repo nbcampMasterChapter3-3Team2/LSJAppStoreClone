@@ -37,7 +37,7 @@ final class SpringAlbumCell: UICollectionViewCell {
 
     private let artistNameLabel = UILabel().then {
         $0.font = .systemFont(ofSize: 14, weight: .semibold)
-        $0.textColor = .cSecondary
+        $0.textColor = .customSecondary
         $0.numberOfLines = 1
     }
 
