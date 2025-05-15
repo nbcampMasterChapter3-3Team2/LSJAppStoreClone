@@ -234,7 +234,41 @@ extension SuggestionViewController: UITableViewDelegate {
 }
 
 // TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
-extension SuggestionViewController: UICollectionViewDelegate { }
+extension SuggestionViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return }
+
+        let section = displayedSections[indexPath.section]
+        var selectedItem: Any? = nil
+        var type: RequestURLType? = nil
+
+        switch section {
+        case .Search: break
+        case .Movie:
+            selectedItem = movieResults.results[indexPath.item]
+            type = .Movie
+        case .Podcast:
+            selectedItem = podcastResults.results[indexPath.item]
+            type = .Podcast
+        }
+
+        let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
+        let originalFrame = cell.convert(cell.bounds, to: view)
+        snapshot.frame = originalFrame
+        view.addSubview(snapshot)
+        cell.isHidden = true
+
+        let detailVC = DetailViewController()
+        detailVC.configure(type: type!, to: selectedItem)
+
+        detailVC.modalPresentationStyle = .overFullScreen
+        self.present(detailVC, animated: false) {
+            snapshot.removeFromSuperview()
+            cell.isHidden = false
+        }
+
+    }
+}
 
 extension SuggestionViewController: UICollectionViewDataSource {
 

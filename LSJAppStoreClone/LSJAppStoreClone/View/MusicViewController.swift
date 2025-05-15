@@ -175,65 +175,65 @@ final class MusicViewController: UIViewController {
 extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-            let section = Season.allCases[section]
-            switch section {
-            case .spring: return springMusics.results.count
-            case .summer: return summerMusics.results.count
-            case .fall: return fallMusics.results.count
-            case .winter: return winterMusics.results.count
-            }
+        let section = Season.allCases[section]
+        switch section {
+        case .spring: return springMusics.results.count
+        case .summer: return summerMusics.results.count
+        case .fall: return fallMusics.results.count
+        case .winter: return winterMusics.results.count
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-            switch Season.allCases[indexPath.section] {
-            case .spring:
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: SpringAlbumCell.id,
-                    for: indexPath
-                ) as? SpringAlbumCell else {
-                    return UICollectionViewCell()
-                }
-                let album = springMusics.results[indexPath.item]
-                cell.configure(data: album)
-                return cell
-
-            case .summer:
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: OthersAlbumCell.id,
-                    for: indexPath
-                ) as? OthersAlbumCell else {
-                    return UICollectionViewCell()
-                }
-
-                let album = summerMusics.results[indexPath.item]
-                cell.configure(data: album)
-                return cell
-
-            case .fall:
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: OthersAlbumCell.id,
-                    for: indexPath
-                ) as? OthersAlbumCell else {
-                    return UICollectionViewCell()
-                }
-                let album = fallMusics.results[indexPath.item]
-                cell.configure(data: album)
-
-                return cell
-
-            case .winter:
-                guard let cell = collectionView.dequeueReusableCell(
-                    withReuseIdentifier: OthersAlbumCell.id,
-                    for: indexPath
-                ) as? OthersAlbumCell else {
-                    return UICollectionViewCell()
-                }
-
-                let album = winterMusics.results[indexPath.item]
-                cell.configure(data: album)
-
-                return cell
+        switch Season.allCases[indexPath.section] {
+        case .spring:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: SpringAlbumCell.id,
+                for: indexPath
+            ) as? SpringAlbumCell else {
+                return UICollectionViewCell()
             }
+            let album = springMusics.results[indexPath.item]
+            cell.configure(data: album)
+            return cell
+
+        case .summer:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: OthersAlbumCell.id,
+                for: indexPath
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
+
+            let album = summerMusics.results[indexPath.item]
+            cell.configure(data: album)
+            return cell
+
+        case .fall:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: OthersAlbumCell.id,
+                for: indexPath
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
+            let album = fallMusics.results[indexPath.item]
+            cell.configure(data: album)
+
+            return cell
+
+        case .winter:
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: OthersAlbumCell.id,
+                for: indexPath
+            ) as? OthersAlbumCell else {
+                return UICollectionViewCell()
+            }
+
+            let album = winterMusics.results[indexPath.item]
+            cell.configure(data: album)
+
+            return cell
+        }
     }
 
 
@@ -260,8 +260,42 @@ extension MusicViewController: UICollectionViewDataSource {
 
 // TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
 extension MusicViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 
+        // 1) 모델 추출
+        let season = Season.allCases[indexPath.section]
+        let selectedItem: MusicResult
+        switch season {
+        case .spring:
+            selectedItem = springMusics.results[indexPath.item]
+        case .summer:
+            selectedItem = summerMusics.results[indexPath.item]
+        case .fall:
+            selectedItem = fallMusics.results[indexPath.item]
+        case .winter:
+            selectedItem = winterMusics.results[indexPath.item]
+        }
+
+        // 2) 스냅샷 생성
+        let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
+        let originalFrame = cell.convert(cell.bounds, to: view)
+        snapshot.frame = originalFrame
+        view.addSubview(snapshot)
+        cell.isHidden = true
+
+        let detailVC = DetailViewController()
+        detailVC.configure(type: .Music, to: selectedItem)
+
+        detailVC.modalPresentationStyle = .overFullScreen
+        self.present(detailVC, animated: false) {
+            snapshot.removeFromSuperview()
+            cell.isHidden = false
+        }
+    }
 }
+
+
 
 extension MusicViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
