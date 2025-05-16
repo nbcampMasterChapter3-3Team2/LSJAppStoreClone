@@ -5,7 +5,6 @@
 //  Created by yimkeul on 5/11/25.
 //
 
-
 import UIKit
 
 import RxSwift
@@ -19,35 +18,30 @@ final class SuggestionViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel = SuggestionViewModel()
 
-    private var movieResults = Movie()
-    private var podcastResults = Podcast()
-
-    private let cv = CollectionViewManager()
+    private var movies = Movie()
+    private var podcasts = Podcast()
+    private var currentType: SelectedType = .Search
 
     var onSearchHeaderTap: (() -> Void)?
 
     // MARK: - UI Components
     private let tableView = UITableView().then {
-        $0.register(SuggestionTableViewCell.self,
-            forCellReuseIdentifier: SuggestionTableViewCell.id)
+        $0.register(SuggestionTableViewCell.self, forCellReuseIdentifier: SuggestionTableViewCell.id)
         $0.rowHeight = 50
-        $0.isHidden = false
         $0.backgroundColor = .systemBackground
     }
-
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Search)).then {
-        $0.register(SearchResultCell.self,
-            forCellWithReuseIdentifier: SearchResultCell.id)
-
-        $0.register(SearchResultHeaderView.self,
+    private lazy var collectionView = UICollectionView(
+        frame: .zero,
+        collectionViewLayout: CollectionViewManager().createCompositionalLayout(of: .Search)
+    ).then {
+        $0.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.id)
+        $0.register(
+            SearchResultHeaderView.self,
             forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-            withReuseIdentifier: SearchResultHeaderView.id)
-
-
+            withReuseIdentifier: SearchResultHeaderView.id
+        )
         $0.showsHorizontalScrollIndicator = false
         $0.showsVerticalScrollIndicator = false
-
-        $0.isHidden = true
         $0.backgroundColor = .systemBackground
     }
 
@@ -64,26 +58,23 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Style Helper
     private func setStyle() {
-        view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .systemBackground
     }
 
     // MARK: - Hierarchy Helper
     private func setHierarchy() {
-        self.view.addSubviews(tableView, collectionView)
+        view.addSubviews(tableView, collectionView)
     }
 
     // MARK: - Layout Helper
     private func setLayout() {
-        tableView.snp.makeConstraints {
-            $0.edges.equalTo(view.safeAreaLayoutGuide)
+        tableView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
-
-        collectionView.snp.makeConstraints {
-            $0.edges.equalTo(view.safeAreaLayoutGuide)
+        collectionView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide)
         }
     }
 
-    // MARK: - Delegate Helper
+    // MARK: - Deleate Helper
     private func setDelegate() {
         tableView.delegate = self
         collectionView.delegate = self
@@ -97,144 +88,182 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Methods
     private func binding() {
-        viewModel.movieSubject
+        viewModel.state.movieStream
             .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] movies in
-                self?.movieResults = movies
-                self?.tableView.reloadData()
-                self?.collectionView.reloadData()
-            },
-            onError: { error in
-                NSLog("error binding movie : \(error.localizedDescription)")
-            }
-        )
+            .subscribe(onNext: { [weak self] movies in
+            self?.movies = movies
+            self?.tableView.reloadData()
+            self?.collectionView.reloadData()
+        })
             .disposed(by: disposeBag)
 
-
-        viewModel.podcastSubject
+        viewModel.state.podcastStream
             .observe(on: MainScheduler.instance)
-            .subscribe(
-            onNext: { [weak self] podcasts in
-                self?.podcastResults = podcasts
-                self?.tableView.reloadData()
-                self?.collectionView.reloadData()
-            },
-            onError: { error in
-                NSLog("error binding movie : \(error.localizedDescription)")
-            }
-        )
+            .subscribe(onNext: { [weak self] podcasts in
+            self?.podcasts = podcasts
+            self?.tableView.reloadData()
+            self?.collectionView.reloadData()
+        })
             .disposed(by: disposeBag)
 
-        viewModel.isShowingSearchResults
+        viewModel.state.isShowingResults
             .bind(to: tableView.rx.isHidden)
             .disposed(by: disposeBag)
 
-        viewModel.isShowingSearchResults
+        viewModel.state.isShowingResults
             .map { !$0 }
             .bind(to: collectionView.rx.isHidden)
             .disposed(by: disposeBag)
 
-        viewModel.selectedSuggestion
+        viewModel.state.selectedType
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] type in
+            self?.currentType = type
+        })
+            .disposed(by: disposeBag)
+
+        viewModel.state.selectedSuggestion
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { [weak self] suggestion in
-            guard let self = self else { return }
             switch suggestion {
             case .movie(let movies, let index):
                 let sliced = Array(movies.results[index...])
-                self.movieResults = Movie(
-                    resultCount: movies.resultCount,
-                    results: sliced
-                )
-
+                print(index)
+                self?.movies = Movie(resultCount: movies.resultCount, results: sliced)
             case .podcast(let podcasts, let index):
                 let sliced = Array(podcasts.results[index...])
-                self.podcastResults = Podcast(
+                self?.podcasts = Podcast(
                     resultCount: podcasts.resultCount,
                     results: sliced
                 )
             }
 
-            self.tableView.reloadData()
-            self.collectionView.reloadData()
+            self?.tableView.reloadData()
+            self?.collectionView.reloadData()
         })
             .disposed(by: disposeBag)
     }
 
     func fetchMovieAndPodcast(to kw: String) {
-        viewModel.cancelSearch()
-        viewModel.fetchMovieAndPodcast(to: kw)
+        viewModel.action.onNext(.cancelSearch)
+        viewModel.action.onNext(.fetch(query: kw))
     }
 
     func searchAndShowResult(_ kw: String) {
-        viewModel.cancelSearch()
-        viewModel.selectedIndex.accept(0)
-        viewModel.isShowingSearchResults.accept(true)
-        viewModel.selectedType.accept(.Search)
-        viewModel.fetchMovieAndPodcast(to: kw)
+        viewModel.action.onNext(.cancelSearch)
+        viewModel.action.onNext(.enterSuggestion(type: .Search, index: 0))
+        viewModel.action.onNext(.fetch(query: kw))
+
     }
 
     private var displayedSections: [SelectedType] {
-        switch viewModel.selectedType.value {
-        case .Search:
-            return [.Search, .Movie, .Podcast]
-        case .Movie:
-            return [.Search, .Movie]
-        case .Podcast:
-            return [.Search, .Podcast]
+        switch currentType {
+        case .Search: return [.Search, .Movie, .Podcast]
+        case .Movie: return [.Search, .Movie]
+        case .Podcast: return [.Search, .Podcast]
         }
     }
 }
 
+// MARK: - UITableView
 extension SuggestionViewController: UITableViewDataSource {
 
     func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
 
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 0: return movieResults.results.count
-        case 1: return podcastResults.results.count
-        default: return 0
-        }
+    func tableView(_ talbleView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+        return section == 0 ? movies.results.count : podcasts.results.count
     }
 
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(
+    func tableView(_ talbleView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = talbleView.dequeueReusableCell(
             withIdentifier: SuggestionTableViewCell.id,
             for: indexPath
-        ) as? SuggestionTableViewCell else {
-            return UITableViewCell()
-        }
-        switch indexPath.section {
-        case 0:
-            let result = movieResults.results[indexPath.row]
-            cell.configureMovie(with: result)
-        case 1:
-            let result = podcastResults.results[indexPath.row]
-            cell.configurePodcast(with: result)
-        default:
-            return UITableViewCell()
+        ) as! SuggestionTableViewCell
+        if indexPath.section == 0 {
+            cell.configureMovie(with: movies.results[indexPath.row])
+        } else {
+            cell.configurePodcast(with: podcasts.results[indexPath.row])
         }
         return cell
     }
 }
 
 extension SuggestionViewController: UITableViewDelegate {
-    // 셀 선택 시 동작
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
         let suggestion: Suggestion = indexPath.section == 0
-            ? .movie(movie: movieResults, index: indexPath.row)
-        : .podcast(podcast: podcastResults, index: indexPath.row)
-        viewModel.selectedSuggestion.onNext(suggestion)
+            ? .movie(movie: movies, index: indexPath.row)
+        : .podcast(podcast: podcasts, index: indexPath.row)
+        viewModel.action.onNext(.selectSuggestion(suggestion))
     }
 }
 
-// TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
+// MARK: - UICollectionView
+extension SuggestionViewController: UICollectionViewDataSource {
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        displayedSections.count
+    }
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        switch displayedSections[section] {
+        case .Movie: return movies.results.count
+        case .Podcast: return podcasts.results.count
+        case .Search: return 0
+        }
+    }
+    func collectionView(
+        _ cv: UICollectionView,
+        cellForItemAt ip: IndexPath
+    ) -> UICollectionViewCell {
+        let cell = cv.dequeueReusableCell(
+            withReuseIdentifier: SearchResultCell.id,
+            for: ip
+        ) as! SearchResultCell
+
+        switch displayedSections[ip.section] {
+        case .Movie:
+            cell.configureMovie(with: movies.results[ip.item])
+        case .Podcast:
+            cell.configurePodcast(with: podcasts.results[ip.item])
+        case .Search:
+            break
+        }
+        return cell
+    }
+    func collectionView(
+        _ collectionView: UICollectionView,
+        viewForSupplementaryElementOfKind kind: String,
+        at indexPath: IndexPath
+    ) -> UICollectionReusableView {
+        guard kind == UICollectionView.elementKindSectionHeader else { return .init() }
+        let header = collectionView.dequeueReusableSupplementaryView(
+            ofKind: kind,
+            withReuseIdentifier: SearchResultHeaderView.id,
+            for: indexPath
+        ) as! SearchResultHeaderView
+
+        switch displayedSections[indexPath.section] {
+        case .Search:
+            header.configure(text: viewModel.keywordRelay, section: .Search)
+            header.onTap = { [weak self] in
+                self?.viewModel.action.onNext(.cancelSearch)
+                self?.onSearchHeaderTap?()
+            }
+        case .Movie:
+            header.configure(text: movies.results.isEmpty ? "" : "Movie", section: .Movie)
+            header.onTap = nil
+        case .Podcast:
+            header.configure(text: podcasts.results.isEmpty ? "" : "Podcast", section: .Podcast)
+            header.onTap = nil
+        }
+        return header
+    }
+}
+
 extension SuggestionViewController: UICollectionViewDelegate {
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 
@@ -245,10 +274,10 @@ extension SuggestionViewController: UICollectionViewDelegate {
         switch section {
         case .Search: break
         case .Movie:
-            selectedItem = movieResults.results[indexPath.item]
+            selectedItem = movies.results[indexPath.item]
             type = .Movie
         case .Podcast:
-            selectedItem = podcastResults.results[indexPath.item]
+            selectedItem = podcasts.results[indexPath.item]
             type = .Podcast
         }
 
@@ -268,70 +297,5 @@ extension SuggestionViewController: UICollectionViewDelegate {
         }
 
     }
+
 }
-
-extension SuggestionViewController: UICollectionViewDataSource {
-
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return displayedSections.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let section = displayedSections[section]
-        switch section {
-        case .Search: return 0
-        case .Movie: return movieResults.results.count
-        case .Podcast: return podcastResults.results.count
-        }
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: SearchResultCell.id,
-            for: indexPath
-        ) as? SearchResultCell else {
-            return UICollectionViewCell()
-        }
-        switch displayedSections[indexPath.section] {
-        case .Movie:
-            let movie = movieResults.results[indexPath.item]
-            cell.configureMovie(with: movie)
-        case .Podcast:
-            let podcast = podcastResults.results[indexPath.item]
-            cell.configurePodcast(with: podcast)
-        case .Search:
-            return UICollectionViewCell()
-        }
-        return cell
-    }
-
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        guard kind == UICollectionView.elementKindSectionHeader else { return UICollectionReusableView() }
-        guard let headerView = collectionView.dequeueReusableSupplementaryView(
-            ofKind: kind,
-            withReuseIdentifier: SearchResultHeaderView.id,
-            for: indexPath
-        ) as? SearchResultHeaderView else {
-            return UICollectionReusableView()
-        }
-
-        switch displayedSections[indexPath.section] {
-        case .Search:
-            headerView.configure(text: viewModel.currentKeyworkd, section: .Search)
-            headerView.onTap = { [weak self] in
-                self?.viewModel.cancelSearch()
-                self?.onSearchHeaderTap?()
-            }
-        case .Movie:
-            headerView.configure(text: movieResults.results.isEmpty ? "" : "Movie", section: .Movie)
-            headerView.onTap = nil
-
-        case .Podcast:
-            headerView.configure(text: podcastResults.results.isEmpty ? "" : "Podcast", section: .Podcast)
-            headerView.onTap = nil
-        }
-        return headerView
-    }
-}
-

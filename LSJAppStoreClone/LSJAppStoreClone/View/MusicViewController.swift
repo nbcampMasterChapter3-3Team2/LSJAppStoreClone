@@ -93,12 +93,13 @@ final class MusicViewController: UIViewController {
     private func binding() {
         let streams = Season.allCases.compactMap { viewModel.state.musicStreams[$0]
         }
-          Observable.combineLatest(streams)
-              .observe(on: MainScheduler.instance)
-              .subscribe(onNext: { [weak self] _ in
-                  self?.collectionView.reloadData()
-              })
-              .disposed(by: disposeBag)
+
+        Observable.combineLatest(streams)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+            self?.collectionView.reloadData()
+        })
+            .disposed(by: disposeBag)
 
         searchBarBinding()
     }
@@ -122,7 +123,7 @@ extension MusicViewController: UICollectionViewDataSource {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let season = Season.allCases[section]
-            return viewModel.relay(for: season).value.results.count
+        return viewModel.relay(for: season).value.results.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -168,13 +169,12 @@ extension MusicViewController: UICollectionViewDataSource {
     }
 }
 
-// TODO: - 도전과제 : 아이템 선택시 상세화면 뷰 이동
 extension MusicViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let cell = collectionView.cellForItem(at: indexPath) else { return }
 
         let season = Season.allCases[indexPath.section]
-        let item   = viewModel.relay(for: season).value.results[indexPath.item]
+        let item = viewModel.relay(for: season).value.results[indexPath.item]
 
         let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
         let originalFrame = cell.convert(cell.bounds, to: view)

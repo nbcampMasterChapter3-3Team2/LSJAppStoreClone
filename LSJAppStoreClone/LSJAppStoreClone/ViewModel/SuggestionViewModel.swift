@@ -6,104 +6,120 @@
 //
 
 import Foundation
-
 import RxSwift
 import RxRelay
 
-final class SuggestionViewModel {
+final class SuggestionViewModel: BaseViewModel {
+    // MARK: - Action & State
+    enum Action {
+        case fetch(query: String)
+        case selectSuggestion(Suggestion)
+        case enterSuggestion(type: SelectedType, index: Int)
+        case cancelSearch
+    }
+
+    struct State {
+        let movieStream: Observable<Movie>
+        let podcastStream: Observable<Podcast>
+        let isShowingResults: Observable<Bool>
+        let selectedType: Observable<SelectedType>
+        let selectedIndex: Observable<Int>
+        let selectedSuggestion: Observable<Suggestion>
+    }
 
     // MARK: - Properties
-    private let disposeBag = DisposeBag()
+    private let actionSubject = PublishSubject<Action>()
+    var action: AnyObserver<Action> { actionSubject.asObserver() }
 
-    private var movieResults = Movie()
-    private var podcastResults = Podcast()
+    let state: State
+    let disposeBag = DisposeBag()
 
-    let selectedSuggestion = PublishSubject<Suggestion>()
-    let movieSubject    = BehaviorSubject(value: Movie())
-    let podcastSubject  = BehaviorSubject(value: Podcast())
-    let isShowingSearchResults = BehaviorRelay<Bool>(value: false)
-    let selectedType    = BehaviorRelay<SelectedType>(value: .Search)
-    let selectedIndex   = BehaviorRelay<Int>(value: 0)
-    var currentKeyworkd = ""
+    // 내부 Relay 모음
+    private let movieRelay = BehaviorRelay<Movie>(value: Movie())
+    private let podcastRelay = BehaviorRelay<Podcast>(value: Podcast())
+    private let showingRelay = BehaviorRelay<Bool>(value: false)
+    private let typeRelay = BehaviorRelay<SelectedType>(value: .Search)
+    private let indexRelay = BehaviorRelay<Int>(value: 0)
+    private let suggestionRelay = PublishRelay<Suggestion>()
+    var keywordRelay = ""
 
     // MARK: - Initializer
     init() {
-        selectedSuggestion
-                   .map { _ in true }
-                   .bind(to: isShowingSearchResults)
-                   .disposed(by: disposeBag)
+        state = State(
+            movieStream: movieRelay.asObservable(),
+            podcastStream: podcastRelay.asObservable(),
+            isShowingResults: showingRelay.asObservable(),
+            selectedType: typeRelay.asObservable(),
+            selectedIndex: indexRelay.asObservable(),
+            selectedSuggestion: suggestionRelay.asObservable()
+        )
 
-        selectedSuggestion
-            .subscribe(onNext: { [weak self] suggestion in
-                guard let self = self else { return }
+        // Action 처리
+        actionSubject
+            .observe(on: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] action in
+            guard let self = self else { return }
+            switch action {
+            case .fetch(let q):
+                self.keywordRelay = q
+                self.fetchMovie(q)
+                self.fetchPodcast(q)
+
+            case .selectSuggestion(let suggestion):
+                self.showingRelay.accept(true)
+                self.suggestionRelay.accept(suggestion)
                 switch suggestion {
-                case .movie(_, let index):
-                    self.selectedType.accept(.Movie)
-                    self.selectedIndex.accept(index)
-
-                case .podcast(_, let index):
-                    self.selectedType.accept(.Podcast)
-                    self.selectedIndex.accept(index)
+                case .movie(_, let idx):
+                    self.typeRelay.accept(.Movie)
+                    self.indexRelay.accept(idx)
+                case .podcast(_, let idx):
+                    self.typeRelay.accept(.Podcast)
+                    self.indexRelay.accept(idx)
                 }
-            })
+
+            case .enterSuggestion(type: let type, index: let index):
+                self.showingRelay.accept(true)
+                self.typeRelay.accept(type)
+                self.indexRelay.accept(index)
+
+            case .cancelSearch:
+                self.showingRelay.accept(false)
+
+            }
+        })
             .disposed(by: disposeBag)
     }
 
-    // MARK: - Methods
-    func cancelSearch() {
-        isShowingSearchResults.accept(false)
-    }
-
-    func fetchMovieAndPodcast(to query: String) {
-        fetchMovie(to: query)
-        fetchPodcast(to: query)
-        currentKeyworkd = query
-    }
-
-    private func fetchMovie(to query: String) {
-
-        guard let url = URL(string: "\(RequestURLType.Movie.url)\(query)") else { return }
-
+    // MARK: - 네트워크
+    private func fetchMovie(_ q: String) {
+        guard let url = URL(string: "\(RequestURLType.Movie.url)\(q)") else { return }
         NetworkManager.shared.fetch(url: url)
             .observe(on: MainScheduler.instance)
             .subscribe(
-            onSuccess: { [weak self] (movie: Movie) in
-                let sorted = movie.results.sorted { $0.releaseDate > $1.releaseDate }
-                self?.movieSubject.onNext(Movie(
-                    resultCount: movie.resultCount,
-                    results: sorted
-                    ))
+            onSuccess: { [weak self] (m: Movie) in
+                let sorted = m.results.sorted { $0.releaseDate > $1.releaseDate }
+                self?.movieRelay.accept(Movie(resultCount: m.resultCount, results: sorted))
             },
-
-            onFailure: { [weak self] error in
-                self?.movieSubject.onError(error)
-                NSLog("MovieVM FetchMovie Error : \(error)")
+            onFailure: { error in
+                NSLog("Movie fetch error: \(error)")
             }
         )
             .disposed(by: disposeBag)
     }
 
-    private func fetchPodcast(to query: String) {
-        guard let url = URL(string: "\(RequestURLType.Podcast.url)\(query)") else { return }
-
+    private func fetchPodcast(_ q: String) {
+        guard let url = URL(string: "\(RequestURLType.Podcast.url)\(q)") else { return }
         NetworkManager.shared.fetch(url: url)
             .observe(on: MainScheduler.instance)
             .subscribe(
-            onSuccess: { [weak self] (podcast: Podcast) in
-                let sorted = podcast.results.sorted { $0.releaseDate > $1.releaseDate }
-                self?.podcastSubject.onNext(Podcast(
-                    resultCount: podcast.resultCount,
-                    results: sorted
-                    ))
-                self?.podcastSubject.onNext(podcast)
+            onSuccess: { [weak self] (p: Podcast) in
+                let sorted = p.results.sorted { $0.releaseDate > $1.releaseDate }
+                self?.podcastRelay.accept(Podcast(resultCount: p.resultCount, results: sorted))
             },
-            onFailure: { [weak self] error in
-                self?.podcastSubject.onError(error)
-                NSLog("PodcastVM FetchPodcast Error : \(error)")
+            onFailure: { error in
+                NSLog("Podcast fetch error: \(error)")
             }
         )
             .disposed(by: disposeBag)
     }
-
 }
-
