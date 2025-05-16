@@ -107,6 +107,7 @@ final class MusicViewController: UIViewController {
     private func searchBarBinding() {
         self.searchController.searchBar.rx.text.orEmpty
             .distinctUntilChanged()
+            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
             .bind { [weak self] text in
             self?.suggestVC.fetchMovieAndPodcast(to: text)
         }.disposed(by: disposeBag)
