@@ -176,7 +176,9 @@ extension MusicViewController: UICollectionViewDelegate {
         let season = Season.allCases[indexPath.section]
         let item = viewModel.relay(for: season).value.results[indexPath.item]
 
-        let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
+        guard let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false) else {
+            return
+        }
         let originalFrame = cell.convert(cell.bounds, to: view)
         snapshot.frame = originalFrame
         view.addSubview(snapshot)
