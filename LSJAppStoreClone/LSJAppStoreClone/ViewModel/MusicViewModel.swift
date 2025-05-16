@@ -73,6 +73,7 @@ final class MusicViewModel: BaseViewModel {
     }
 
     func relay(for season: Season) -> BehaviorRelay<Music> {
-        return relays[season]!
+        return relays[season] ?? BehaviorRelay(value: Music())
     }
+
 }
