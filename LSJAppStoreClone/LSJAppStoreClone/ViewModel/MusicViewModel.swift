@@ -8,36 +8,52 @@
 import Foundation
 
 import RxSwift
+import RxRelay
 
-final class MusicViewModel {
+final class MusicViewModel: BaseViewModel {
+
+    // MARK: - Action & State
+    enum Action {
+        case fetch(season: Season)
+    }
+
+    struct State {
+        let musicStreams: [Season: Observable<Music>]
+    }
 
     // MARK: - Properties
-    private let disposBag = DisposeBag()
+    var action: AnyObserver<Action> { actionSubject.asObserver() }
+    let state: State
 
-    let springMusicSubject = BehaviorSubject(value: Music())
-    let summerMusicSubject = BehaviorSubject(value: Music())
-    let fallMusicSubject = BehaviorSubject(value: Music())
-    let winterMusicSubject = BehaviorSubject(value: Music())
+    private let actionSubject = PublishSubject<Action>()
+    private let relays: [Season: BehaviorRelay<Music>]
+    let disposeBag = DisposeBag()
 
     // MARK: - Initializer
     init() {
-        Season.allCases.forEach { season in
-            fetchMusic(to: season)
+        relays = Dictionary(
+            uniqueKeysWithValues: Season.allCases.map { season in
+                (season, BehaviorRelay(value: Music()))
+            }
+        )
+
+        state = State(
+            musicStreams: relays.mapValues { $0.asObservable() }
+        )
+
+        actionSubject
+            .compactMap { action -> Season? in
+            guard case .fetch(let season) = action else { return nil }
+            return season
         }
+            .subscribe(onNext: fetchMusic)
+            .disposed(by: disposeBag)
+
+        Season.allCases.forEach(fetchMusic)
     }
 
     // MARK: - Methods
-    private func subject(for season: Season) -> BehaviorSubject<Music> {
-        switch season {
-        case .spring: return springMusicSubject
-        case .summer: return summerMusicSubject
-        case .fall: return fallMusicSubject
-        case .winter: return winterMusicSubject
-        }
-    }
-
     private func fetchMusic(to season: Season) {
-
         guard let url = URL(string: "\(RequestURLType.Music.url)\(season.query)") else { return }
 
         NetworkManager.shared.fetch(url: url)
@@ -45,20 +61,18 @@ final class MusicViewModel {
             .subscribe(
             onSuccess: { [weak self] (music: Music) in
                 let sorted = music.results.sorted { $0.releaseDate > $1.releaseDate }
-                self?.subject(for: season).onNext(
-                    Music(
-                        resultCount: music.resultCount,
-                        results: season == .spring ? Array(sorted.prefix(5)) : sorted
-                    )
-                )
-                NSLog("MusicVM \(season) FetchMusic Succes")
+                let limited = (season == .spring ? Array(sorted.prefix(5)) : sorted)
+                let updated = Music(resultCount: music.resultCount, results: limited)
+                self?.relay(for: season).accept(updated)
             },
-
-            onFailure: { [weak self] error in
-                self?.subject(for: season).onError(error)
-                NSLog("MusicVM FetchMusic Error : \(error)")
+            onFailure: { error in
+                NSLog("MusicVM FetchMusic Error: \(error)")
             }
         )
-            .disposed(by: disposBag)
+            .disposed(by: disposeBag)
+    }
+
+    func relay(for season: Season) -> BehaviorRelay<Music> {
+        return relays[season]!
     }
 }
