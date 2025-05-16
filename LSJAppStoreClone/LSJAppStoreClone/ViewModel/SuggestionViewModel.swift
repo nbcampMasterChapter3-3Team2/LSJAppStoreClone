@@ -14,7 +14,7 @@ final class SuggestionViewModel: BaseViewModel {
     enum Action {
         case fetch(query: String)
         case selectSuggestion(Suggestion)
-        case enterSuggestion(type: SelectedType, index: Int)
+        case enterSuggestion
         case cancelSearch
     }
 
@@ -22,8 +22,6 @@ final class SuggestionViewModel: BaseViewModel {
         let movieStream: Observable<Movie>
         let podcastStream: Observable<Podcast>
         let isShowingResults: Observable<Bool>
-        let selectedType: Observable<SelectedType>
-        let selectedIndex: Observable<Int>
         let selectedSuggestion: Observable<Suggestion>
     }
 
@@ -33,24 +31,34 @@ final class SuggestionViewModel: BaseViewModel {
 
     let state: State
     let disposeBag = DisposeBag()
+    var movies: Movie {
+        movieSlicedRelay.value
+    }
+    var podcasts: Podcast {
+        podcastSlicedRelay.value
+    }
+    var selectedTypeValue: SelectedType {
+        typeRelay.value
+    }
+    var keywordRelay = ""
 
     // 내부 Relay 모음
     private let movieRelay = BehaviorRelay<Movie>(value: Movie())
+    private let movieSlicedRelay = BehaviorRelay<Movie>(value: Movie())
     private let podcastRelay = BehaviorRelay<Podcast>(value: Podcast())
+    private let podcastSlicedRelay = BehaviorRelay<Podcast>(value: Podcast())
     private let showingRelay = BehaviorRelay<Bool>(value: false)
     private let typeRelay = BehaviorRelay<SelectedType>(value: .Search)
-    private let indexRelay = BehaviorRelay<Int>(value: 0)
     private let suggestionRelay = PublishRelay<Suggestion>()
-    var keywordRelay = ""
+
+
 
     // MARK: - Initializer
     init() {
         state = State(
-            movieStream: movieRelay.asObservable(),
-            podcastStream: podcastRelay.asObservable(),
+            movieStream: movieSlicedRelay.asObservable(),
+            podcastStream: podcastSlicedRelay.asObservable(),
             isShowingResults: showingRelay.asObservable(),
-            selectedType: typeRelay.asObservable(),
-            selectedIndex: indexRelay.asObservable(),
             selectedSuggestion: suggestionRelay.asObservable()
         )
 
@@ -69,21 +77,34 @@ final class SuggestionViewModel: BaseViewModel {
                 self.showingRelay.accept(true)
                 self.suggestionRelay.accept(suggestion)
                 switch suggestion {
-                case .movie(_, let idx):
+                case .movie(let movies, let index):
                     self.typeRelay.accept(.Movie)
-                    self.indexRelay.accept(idx)
-                case .podcast(_, let idx):
+                    let sliced = Array(movies.results[index...])
+                    movieSlicedRelay.accept(
+                        Movie(
+                            resultCount: movies.resultCount, results: sliced
+                        )
+                    )
+                case .podcast(let podcasts, let index):
                     self.typeRelay.accept(.Podcast)
-                    self.indexRelay.accept(idx)
+                    let sliced = Array(podcasts.results[index...])
+                    podcastSlicedRelay.accept(
+                        Podcast(
+                            resultCount: podcasts.resultCount,
+                            results: sliced
+                        )
+                    )
                 }
 
-            case .enterSuggestion(type: let type, index: let index):
+            case .enterSuggestion:
                 self.showingRelay.accept(true)
-                self.typeRelay.accept(type)
-                self.indexRelay.accept(index)
+                self.typeRelay.accept(.Search)
 
             case .cancelSearch:
                 self.showingRelay.accept(false)
+                self.movieSlicedRelay.accept(self.movieRelay.value)
+                self.podcastSlicedRelay.accept(self.podcastRelay.value)
+                self.typeRelay.accept(.Search)
 
             }
         })
@@ -99,6 +120,7 @@ final class SuggestionViewModel: BaseViewModel {
             onSuccess: { [weak self] (m: Movie) in
                 let sorted = m.results.sorted { $0.releaseDate > $1.releaseDate }
                 self?.movieRelay.accept(Movie(resultCount: m.resultCount, results: sorted))
+                self?.movieSlicedRelay.accept(Movie(resultCount: m.resultCount, results: sorted))
             },
             onFailure: { error in
                 NSLog("Movie fetch error: \(error)")
@@ -115,6 +137,7 @@ final class SuggestionViewModel: BaseViewModel {
             onSuccess: { [weak self] (p: Podcast) in
                 let sorted = p.results.sorted { $0.releaseDate > $1.releaseDate }
                 self?.podcastRelay.accept(Podcast(resultCount: p.resultCount, results: sorted))
+                self?.podcastSlicedRelay.accept(Podcast(resultCount: p.resultCount, results: sorted))
             },
             onFailure: { error in
                 NSLog("Podcast fetch error: \(error)")
