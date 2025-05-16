@@ -16,7 +16,7 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let viewModel = SuggestionViewModel()
+    private let viewModel:SuggestionViewModel = DIContainerManager.shared.resolve(SuggestionViewModel.self)
 
     var onSearchHeaderTap: (() -> Void)?
 
@@ -131,12 +131,19 @@ final class SuggestionViewController: UIViewController {
     }
 
     private var displayedSections: [SelectedType] {
-        switch viewModel.selectedTypeValue {
-        case .Search: return [.Search, .Movie, .Podcast]
-        case .Movie: return [.Search, .Movie]
-        case .Podcast: return [.Search, .Podcast]
+        let sections: [SelectedType] = [.Search, .Movie, .Podcast]
+        return sections.filter { section in
+            switch section {
+            case .Search:
+                return true
+            case .Movie:
+                return !viewModel.movies.results.isEmpty
+            case .Podcast:
+                return !viewModel.podcasts.results.isEmpty
+            }
         }
     }
+
 }
 
 // MARK: - UITableView
@@ -232,10 +239,10 @@ extension SuggestionViewController: UICollectionViewDataSource {
                 self?.onSearchHeaderTap?()
             }
         case .Movie:
-            header.configure(text: viewModel.movies.results.isEmpty ? "" : "Movie", section: .Movie)
+            header.configure(text: "Movie", section: .Movie)
             header.onTap = nil
         case .Podcast:
-            header.configure(text: viewModel.podcasts.results.isEmpty ? "" : "Podcast", section: .Podcast)
+            header.configure(text: "Podcast", section: .Podcast)
             header.onTap = nil
         }
         return header
@@ -249,7 +256,7 @@ extension SuggestionViewController: UICollectionViewDelegate {
 
         let section = displayedSections[indexPath.section]
         var selectedItem: Any? = nil
-        var type: RequestURLType? = nil
+        var type: APIEndpoints? = nil
 
         switch section {
         case .Search: break

@@ -16,7 +16,7 @@ final class MusicViewController: UIViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let viewModel = MusicViewModel()
+    private let viewModel = DIContainerManager.shared.resolve(MusicViewModel.self)
     private let suggestVC = SuggestionViewController()
     private let cv = CollectionViewManager()
 
@@ -202,4 +202,3 @@ extension MusicViewController: UISearchBarDelegate {
         suggestVC.searchAndShowResult(keyword)
     }
 }
-
