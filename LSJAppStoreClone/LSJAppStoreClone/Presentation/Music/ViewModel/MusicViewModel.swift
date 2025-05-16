@@ -24,14 +24,16 @@ final class MusicViewModel: BaseViewModel {
     // MARK: - Properties
     var action: AnyObserver<Action> { actionSubject.asObserver() }
     let state: State
+    let disposeBag = DisposeBag()
 
     private let actionSubject = PublishSubject<Action>()
     private let relays: [Season: BehaviorRelay<Music>]
-    let disposeBag = DisposeBag()
+    private let fetchUseCase: FetchMusicUseCaseProtocol
 
     // MARK: - Initializer
-    init() {
-        relays = Dictionary(
+    init(fetchUseCase: FetchMusicUseCaseProtocol) {
+        self.fetchUseCase = fetchUseCase
+        self.relays = Dictionary(
             uniqueKeysWithValues: Season.allCases.map { season in
                 (season, BehaviorRelay(value: Music()))
             }
@@ -46,33 +48,28 @@ final class MusicViewModel: BaseViewModel {
             guard case .fetch(let season) = action else { return nil }
             return season
         }
-            .subscribe(onNext: fetchMusic)
+            .subscribe(onNext: fetch)
             .disposed(by: disposeBag)
 
-        Season.allCases.forEach(fetchMusic)
+        Season.allCases.forEach(fetch)
     }
 
     // MARK: - Methods
-    private func fetchMusic(to season: Season) {
-        guard let url = URL(string: "\(RequestURLType.Music.url)\(season.query)") else { return }
-
-        NetworkManager.shared.fetch(url: url)
+    private func fetch(_ season: Season) {
+        fetchUseCase.execute(season: season)
             .observe(on: MainScheduler.instance)
             .subscribe(
-            onSuccess: { [weak self] (music: Music) in
-                let sorted = music.results.sorted { $0.releaseDate > $1.releaseDate }
-                let limited = (season == .spring ? Array(sorted.prefix(5)) : sorted)
-                let updated = Music(resultCount: music.resultCount, results: limited)
-                self?.relay(for: season).accept(updated)
-            },
-            onFailure: { error in
-                NSLog("MusicVM FetchMusic Error: \(error)")
-            }
-        )
-            .disposed(by: disposeBag)
+                onSuccess: { [weak self] music in
+                    self?.relays[season]?.accept(music)
+                },
+                onFailure: { error in
+                    NSLog("MusicVM FetchMusic Error: \(error)")
+                }
+            ).disposed(by: disposeBag)
     }
 
     func relay(for season: Season) -> BehaviorRelay<Music> {
-        return relays[season]!
+        return relays[season] ?? BehaviorRelay(value: Music())
     }
+
 }

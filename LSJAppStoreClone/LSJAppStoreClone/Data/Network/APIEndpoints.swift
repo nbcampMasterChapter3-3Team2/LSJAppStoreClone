@@ -1,5 +1,5 @@
 //
-//  RequestURLType.swift
+//  APIEndpoints.swift
 //  LSJAppStoreClone
 //
 //  Created by yimkeul on 5/8/25.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum RequestURLType: Codable {
+enum APIEndpoints: Codable {
 
     case Music
     case Movie

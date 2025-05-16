@@ -18,6 +18,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
+        setupDI()
         let vc = MusicViewController()
         let navigationController = UINavigationController(rootViewController: vc)
         window?.rootViewController = navigationController
@@ -51,6 +52,43 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
+    }
+
+    private func setupDI() {
+        let container = DIContainerManager.shared
+
+        // MARK: - Register Suggestion ViewModel
+        // Repository
+        container.register(SuggestionRepository.self) {
+            SuggestionRepository(service: DefaultNetworkService())
+        }
+        // UseCase
+        container.register(FetchSuggestionUseCase.self) {
+            let repo: SuggestionRepository = container.resolve(SuggestionRepository.self)
+            return FetchSuggestionUseCase(repository: repo)
+        }
+        // ViewModel
+        container.register(SuggestionViewModel.self) {
+            let uc: FetchSuggestionUseCase = container.resolve(FetchSuggestionUseCase.self)
+            return SuggestionViewModel(fetchUseCase: uc)
+        }
+
+
+        // MARK: - Register Music ViewModel
+        // Repository
+        container.register(MusicRepository.self) {
+            MusicRepository(service: DefaultNetworkService())
+        }
+        // UseCase
+        container.register(FetchMusicUseCase.self) {
+            let repo: MusicRepository = container.resolve(MusicRepository.self)
+            return FetchMusicUseCase(repository: repo)
+        }
+        // ViewModel
+        container.register(MusicViewModel.self) {
+            let uc: FetchMusicUseCase = container.resolve(FetchMusicUseCase.self)
+            return MusicViewModel(fetchUseCase: uc)
+        }
     }
 
 
