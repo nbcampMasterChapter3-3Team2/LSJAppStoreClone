@@ -18,7 +18,6 @@ final class MusicViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel = DIContainerManager.shared.resolve(MusicViewModel.self)
     private let suggestVC = SuggestionViewController()
-    private let cv = CollectionViewManager()
 
     // MARK: - UI Components
     private lazy var searchController = UISearchController(
@@ -29,7 +28,7 @@ final class MusicViewController: UIViewController {
         $0.obscuresBackgroundDuringPresentation = true
     }
 
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: CollectionViewManager.shared.createCompositionalLayout(of: .Music)).then {
         $0.register(SpringAlbumCell.self,
             forCellWithReuseIdentifier: SpringAlbumCell.id)
         $0.register(OthersAlbumCell.self,

@@ -18,6 +18,7 @@ final class SuggestionViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private let viewModel:SuggestionViewModel = DIContainerManager.shared.resolve(SuggestionViewModel.self)
 
+
     var onSearchHeaderTap: (() -> Void)?
 
     // MARK: - UI Components
@@ -28,7 +29,7 @@ final class SuggestionViewController: UIViewController {
     }
     private lazy var collectionView = UICollectionView(
         frame: .zero,
-        collectionViewLayout: CollectionViewManager().createCompositionalLayout(of: .Search)
+        collectionViewLayout: CollectionViewManager.shared.createCompositionalLayout(of: .Search)
     ).then {
         $0.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.id)
         $0.register(

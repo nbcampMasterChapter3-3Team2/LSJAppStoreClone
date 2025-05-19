@@ -9,6 +9,10 @@ import UIKit
 
 final class CollectionViewManager {
 
+    static let shared = CollectionViewManager()
+
+    private init() {}
+
     enum ViewType {
         case Music
         case Search
