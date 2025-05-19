@@ -16,9 +16,8 @@ final class MusicViewController: UIViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let viewModel = MusicViewModel()
+    private let viewModel = DIContainerManager.shared.resolve(MusicViewModel.self)
     private let suggestVC = SuggestionViewController()
-    private let cv = CollectionViewManager()
 
     // MARK: - UI Components
     private lazy var searchController = UISearchController(
@@ -29,7 +28,7 @@ final class MusicViewController: UIViewController {
         $0.obscuresBackgroundDuringPresentation = true
     }
 
-    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: cv.createCompositionalLayout(of: .Music)).then {
+    private lazy var collectionView = UICollectionView(frame: .zero, collectionViewLayout: CollectionViewManager.shared.createCompositionalLayout(of: .Music)).then {
         $0.register(SpringAlbumCell.self,
             forCellWithReuseIdentifier: SpringAlbumCell.id)
         $0.register(OthersAlbumCell.self,
@@ -107,6 +106,7 @@ final class MusicViewController: UIViewController {
     private func searchBarBinding() {
         self.searchController.searchBar.rx.text.orEmpty
             .distinctUntilChanged()
+            .debounce(.milliseconds(500), scheduler: MainScheduler.instance)
             .bind { [weak self] text in
             self?.suggestVC.fetchMovieAndPodcast(to: text)
         }.disposed(by: disposeBag)
@@ -176,7 +176,9 @@ extension MusicViewController: UICollectionViewDelegate {
         let season = Season.allCases[indexPath.section]
         let item = viewModel.relay(for: season).value.results[indexPath.item]
 
-        let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
+        guard let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false) else {
+            return
+        }
         let originalFrame = cell.convert(cell.bounds, to: view)
         snapshot.frame = originalFrame
         view.addSubview(snapshot)
@@ -200,4 +202,3 @@ extension MusicViewController: UISearchBarDelegate {
         suggestVC.searchAndShowResult(keyword)
     }
 }
-

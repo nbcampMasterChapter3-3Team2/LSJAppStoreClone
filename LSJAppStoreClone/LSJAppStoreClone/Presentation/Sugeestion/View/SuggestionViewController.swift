@@ -16,7 +16,8 @@ final class SuggestionViewController: UIViewController {
 
     // MARK: - Properties
     private let disposeBag = DisposeBag()
-    private let viewModel = SuggestionViewModel()
+    private let viewModel:SuggestionViewModel = DIContainerManager.shared.resolve(SuggestionViewModel.self)
+
 
     var onSearchHeaderTap: (() -> Void)?
 
@@ -28,7 +29,7 @@ final class SuggestionViewController: UIViewController {
     }
     private lazy var collectionView = UICollectionView(
         frame: .zero,
-        collectionViewLayout: CollectionViewManager().createCompositionalLayout(of: .Search)
+        collectionViewLayout: CollectionViewManager.shared.createCompositionalLayout(of: .Search)
     ).then {
         $0.register(SearchResultCell.self, forCellWithReuseIdentifier: SearchResultCell.id)
         $0.register(
@@ -131,12 +132,19 @@ final class SuggestionViewController: UIViewController {
     }
 
     private var displayedSections: [SelectedType] {
-        switch viewModel.selectedTypeValue {
-        case .Search: return [.Search, .Movie, .Podcast]
-        case .Movie: return [.Search, .Movie]
-        case .Podcast: return [.Search, .Podcast]
+        let sections: [SelectedType] = [.Search, .Movie, .Podcast]
+        return sections.filter { section in
+            switch section {
+            case .Search:
+                return true
+            case .Movie:
+                return !viewModel.movies.results.isEmpty
+            case .Podcast:
+                return !viewModel.podcasts.results.isEmpty
+            }
         }
     }
+
 }
 
 // MARK: - UITableView
@@ -152,10 +160,12 @@ extension SuggestionViewController: UITableViewDataSource {
     }
 
     func tableView(_ talbleView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = talbleView.dequeueReusableCell(
+        guard let cell = talbleView.dequeueReusableCell(
             withIdentifier: SuggestionTableViewCell.id,
             for: indexPath
-        ) as! SuggestionTableViewCell
+        ) as? SuggestionTableViewCell else {
+            return UITableViewCell()
+        }
         if indexPath.section == 0 {
             cell.configureMovie(with: viewModel.movies.results[indexPath.row])
         } else {
@@ -189,18 +199,20 @@ extension SuggestionViewController: UICollectionViewDataSource {
     }
     func collectionView(
         _ cv: UICollectionView,
-        cellForItemAt ip: IndexPath
+        cellForItemAt indexPath: IndexPath
     ) -> UICollectionViewCell {
-        let cell = cv.dequeueReusableCell(
+        guard let cell = cv.dequeueReusableCell(
             withReuseIdentifier: SearchResultCell.id,
-            for: ip
-        ) as! SearchResultCell
+            for: indexPath
+        ) as? SearchResultCell else {
+            return UICollectionViewCell()
+        }
 
-        switch displayedSections[ip.section] {
+        switch displayedSections[indexPath.section] {
         case .Movie:
-            cell.configureMovie(with: viewModel.movies.results[ip.item])
+            cell.configureMovie(with: viewModel.movies.results[indexPath.item])
         case .Podcast:
-            cell.configurePodcast(with: viewModel.podcasts.results[ip.item])
+            cell.configurePodcast(with: viewModel.podcasts.results[indexPath.item])
         case .Search:
             break
         }
@@ -212,11 +224,13 @@ extension SuggestionViewController: UICollectionViewDataSource {
         at indexPath: IndexPath
     ) -> UICollectionReusableView {
         guard kind == UICollectionView.elementKindSectionHeader else { return .init() }
-        let header = collectionView.dequeueReusableSupplementaryView(
+        guard let header = collectionView.dequeueReusableSupplementaryView(
             ofKind: kind,
             withReuseIdentifier: SearchResultHeaderView.id,
             for: indexPath
-        ) as! SearchResultHeaderView
+        ) as? SearchResultHeaderView else {
+            return UICollectionReusableView()
+        }
 
         switch displayedSections[indexPath.section] {
         case .Search:
@@ -226,10 +240,10 @@ extension SuggestionViewController: UICollectionViewDataSource {
                 self?.onSearchHeaderTap?()
             }
         case .Movie:
-            header.configure(text: viewModel.movies.results.isEmpty ? "" : "Movie", section: .Movie)
+            header.configure(text: "Movie", section: .Movie)
             header.onTap = nil
         case .Podcast:
-            header.configure(text: viewModel.podcasts.results.isEmpty ? "" : "Podcast", section: .Podcast)
+            header.configure(text: "Podcast", section: .Podcast)
             header.onTap = nil
         }
         return header
@@ -243,7 +257,7 @@ extension SuggestionViewController: UICollectionViewDelegate {
 
         let section = displayedSections[indexPath.section]
         var selectedItem: Any? = nil
-        var type: RequestURLType? = nil
+        var type: APIEndpoints? = nil
 
         switch section {
         case .Search: break
@@ -255,14 +269,16 @@ extension SuggestionViewController: UICollectionViewDelegate {
             type = .Podcast
         }
 
-        let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false)!
+        guard let snapshot = cell.contentView.snapshotView(afterScreenUpdates: false) else {
+            return
+        }
         let originalFrame = cell.convert(cell.bounds, to: view)
         snapshot.frame = originalFrame
         view.addSubview(snapshot)
         cell.isHidden = true
 
         let detailVC = DetailViewController()
-        detailVC.configure(type: type!, to: selectedItem)
+        detailVC.configure(type: type ?? .Movie, to: selectedItem)
 
         detailVC.modalPresentationStyle = .overFullScreen
         self.present(detailVC, animated: false) {

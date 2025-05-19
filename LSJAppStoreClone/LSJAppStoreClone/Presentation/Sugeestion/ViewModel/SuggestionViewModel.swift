@@ -26,11 +26,13 @@ final class SuggestionViewModel: BaseViewModel {
     }
 
     // MARK: - Properties
-    private let actionSubject = PublishSubject<Action>()
     var action: AnyObserver<Action> { actionSubject.asObserver() }
-
     let state: State
     let disposeBag = DisposeBag()
+
+    private let actionSubject = PublishSubject<Action>()
+    private let fetchUseCase: FetchSuggestionUseCaseProtocol
+
     var movies: Movie {
         movieSlicedRelay.value
     }
@@ -54,7 +56,9 @@ final class SuggestionViewModel: BaseViewModel {
 
 
     // MARK: - Initializer
-    init() {
+    init(fetchUseCase: FetchSuggestionUseCaseProtocol) {
+        self.fetchUseCase = fetchUseCase
+
         state = State(
             movieStream: movieSlicedRelay.asObservable(),
             podcastStream: podcastSlicedRelay.asObservable(),
@@ -68,10 +72,10 @@ final class SuggestionViewModel: BaseViewModel {
             .subscribe(onNext: { [weak self] action in
             guard let self = self else { return }
             switch action {
-            case .fetch(let q):
-                self.keywordRelay = q
-                self.fetchMovie(q)
-                self.fetchPodcast(q)
+            case .fetch(let query):
+                self.keywordRelay = query
+                self.fetchMovie(query)
+                self.fetchPodcast(query)
 
             case .selectSuggestion(let suggestion):
                 self.showingRelay.accept(true)
@@ -112,37 +116,34 @@ final class SuggestionViewModel: BaseViewModel {
     }
 
     // MARK: - 네트워크
-    private func fetchMovie(_ q: String) {
-        guard let url = URL(string: "\(RequestURLType.Movie.url)\(q)") else { return }
-        NetworkManager.shared.fetch(url: url)
+    private func fetchMovie(_ query: String) {
+        fetchUseCase.executeMovies(query: query)
             .observe(on: MainScheduler.instance)
             .subscribe(
-            onSuccess: { [weak self] (m: Movie) in
-                let sorted = m.results.sorted { $0.releaseDate > $1.releaseDate }
-                self?.movieRelay.accept(Movie(resultCount: m.resultCount, results: sorted))
-                self?.movieSlicedRelay.accept(Movie(resultCount: m.resultCount, results: sorted))
-            },
-            onFailure: { error in
-                NSLog("Movie fetch error: \(error)")
-            }
-        )
+                onSuccess: {[weak self] movie in
+                    self?.movieRelay.accept(movie)
+                    self?.movieSlicedRelay.accept(movie)
+                },
+                onFailure: { error in
+                    NSLog("Movie fetch error: \(error)")
+                }
+            )
             .disposed(by: disposeBag)
+
     }
 
-    private func fetchPodcast(_ q: String) {
-        guard let url = URL(string: "\(RequestURLType.Podcast.url)\(q)") else { return }
-        NetworkManager.shared.fetch(url: url)
+    private func fetchPodcast(_ query: String) {
+        fetchUseCase.executePodcasts(query: query)
             .observe(on: MainScheduler.instance)
             .subscribe(
-            onSuccess: { [weak self] (p: Podcast) in
-                let sorted = p.results.sorted { $0.releaseDate > $1.releaseDate }
-                self?.podcastRelay.accept(Podcast(resultCount: p.resultCount, results: sorted))
-                self?.podcastSlicedRelay.accept(Podcast(resultCount: p.resultCount, results: sorted))
-            },
-            onFailure: { error in
-                NSLog("Podcast fetch error: \(error)")
-            }
-        )
+                onSuccess: {[weak self] podcast in
+                    self?.podcastRelay.accept(podcast)
+                    self?.podcastSlicedRelay.accept(podcast)
+                },
+                onFailure: { error in
+                    NSLog("Movie fetch error: \(error)")
+                }
+            )
             .disposed(by: disposeBag)
     }
 }
