@@ -1,8 +1,8 @@
 //
-//  NetworkManager.swift
+//  DefaultNetworkService.swift
 //  LSJAppStoreClone
 //
-//  Created by yimkeul on 5/8/25.
+//  Created by yimkeul on 5/16/25.
 //
 
 import Foundation
@@ -10,21 +10,21 @@ import Foundation
 import Alamofire
 import RxSwift
 
+final class DefaultNetworkService: NetworkServiceProtocol {
+    private let decoder: JSONDecoder
 
-final class NetworkManager {
-    static let shared = NetworkManager()
-    private init() {}
+    init(dateDecodingStrategy: JSONDecoder.DateDecodingStrategy = .iso8601) {
+        self.decoder = JSONDecoder()
+        self.decoder.dateDecodingStrategy = dateDecodingStrategy
+    }
 
     func fetch<T: Decodable>(url: URL) -> Single<T> {
         return Single.create { observer in
-
-            let decoder = JSONDecoder()
-            decoder.dateDecodingStrategy = .iso8601
-
-
             let request = AF.request(url, method: .get)
                 .validate()
-                .responseDecodable(of: T.self, queue: .global(), decoder: decoder) { response in
+                .responseDecodable(of: T.self,
+                                   queue: .global(),
+                                   decoder: self.decoder) { response in
                     switch response.result {
                     case .success(let value):
                         observer(.success(value))

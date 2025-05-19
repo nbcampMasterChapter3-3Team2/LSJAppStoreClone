@@ -12,7 +12,7 @@ import Then
 
 class DetailViewController: UIViewController {
     // MARK: - Properties
-    var intoType: RequestURLType?
+    var intoType: APIEndpoints?
 
     // MARK: - UI Components
     private let closeButton = UIButton(type: .system).then {
@@ -132,7 +132,7 @@ class DetailViewController: UIViewController {
     }
 
     // MARK: - Methods
-    func configure(type: RequestURLType, to results: Any?) {
+    func configure(type: APIEndpoints, to results: Any?) {
         guard results != nil else { return }
 
         switch type {
